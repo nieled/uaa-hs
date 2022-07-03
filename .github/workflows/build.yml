@@ -1,0 +1,31 @@
+name: Haskell CI
+
+on:
+  push:
+    branches: [ "*" ]
+    paths-ignore: 
+    - '*.md'
+  pull_request:
+    branches: [ "*" ]
+    paths-ignore: 
+    - '*.md'
+
+jobs:
+  haskell:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+    steps:
+    - uses: actions/checkout@v3
+    - uses: haskell/actions/setup@v2
+      with:
+        ghc-version: 'latest'
+        cabal-version: 'latest'
+        enable-stack: true
+        stack-version: latest
+    - name: Install dependencies
+      run: |
+        stack update
+        stack test --dependencies-only --fast
+    - name: Build and test
+      run: stack test --fast --test-arguments="--hide-successes --ansi-tricks=false"
