@@ -21,7 +21,10 @@ description:         Please see the README on GitHub at <https://github.com/niel
 
 dependencies:
 - base >= 4.7 && < 5
+- aeson
 - regex-tdfa
+- safe-exceptions
+- template-haskell
 - time
 - time-lens
 
