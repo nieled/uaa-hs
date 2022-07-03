@@ -10,48 +10,22 @@ on:
     paths-ignore: 
     - '*.md'
 
-permissions:
-  contents: read
-
 jobs:
-  build:
-
+  haskell:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
-      matrix:
-        versions:
-          - ghc: '9.2.3'
-            cabal: '3.6.2.0'
-            prefix: ''
-            cabalopts: '-f-embed_data_files'
-            testopts: '--test-option=--hide-successes --test-option=--ansi-tricks=false'
-
     steps:
     - uses: actions/checkout@v3
-    - uses: actions/setup-haskell@v1
+    - uses: haskell/actions/setup@v2
       with:
-        ghc-version: ${{ matrix.versions.ghc }}
-        cabal-version: ${{ matrix.versions.cabal }}
-
-    - name: Cache
-      uses: actions/cache@v3
-      env:
-        cache-name: cache-cabal
-      with:
-        path: ~/.cabal
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/*.cabal') }}-${{ hashFiles('**/cabal.project') }}
-        restore-keys: |
-          ${{ runner.os }}-build-${{ env.cache-name }}-
-          ${{ runner.os }}-build-
-          ${{ runner.os }}-
-
+        ghc-version: 'latest'
+        cabal-version: 'latest'
+        enable-stack: true
+        stack-version: latest
     - name: Install dependencies
       run: |
-        cabal update
-        cabal build --only-dependencies --enable-tests --enable-benchmarks
-    - name: Build
-      run: cabal build --enable-tests --enable-benchmarks all
-    - name: Run tests
-      run: cabal test all
-
+        stack update
+        stack test --dependencies-only --fast
+    - name: Build and test
+      run: stack test --fast --test-arguments="--hide-successes --ansi-tricks=false"
