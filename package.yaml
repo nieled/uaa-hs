@@ -23,13 +23,16 @@ dependencies:
 - base >= 4.7 && < 5
 - aeson
 - regex-tdfa
+- raw-strings-qq
 - safe-exceptions
 - template-haskell
+- text
 - time
 - time-lens
 
 default-extensions:
 - OverloadedStrings
+- QuasiQuotes
 
 library:
   source-dirs: src
