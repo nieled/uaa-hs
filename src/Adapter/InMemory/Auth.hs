@@ -2,7 +2,7 @@ module Adapter.InMemory.Auth where
 
 import           Control.Concurrent.STM
 import           Control.Monad.Except
-    ( MonadTrans (lift), runExceptT, throwError )
+    ( MonadTrans (lift), runExceptT, throwError, when )
 import           Control.Monad.IO.Class ( MonadIO (liftIO) )
 import           Control.Monad.Reader   ( MonadReader, asks )
 import           Data.Containers        ( deleteMap, insertMap, insertSet )
@@ -45,7 +45,30 @@ addAuth
   :: InMemory r m
   => D.Auth
   -> m (Either D.RegistrationError D.VerificationCode)
-addAuth auth = undefined
+addAuth auth = do
+  tvar  <- asks getter
+  -- gen verification code
+  vCode <- liftIO $ stringRandomIO "[A-Za-z0-9]{16}"
+  liftIO . atomically . runExceptT $ do
+    state <- lift $ readTVar tvar
+    -- check whether the given email is duplicate
+    let auths       = stateAuths state
+        email       = D.authEmail auth
+        isDuplicate = any ((email ==) . D.authEmail . snd) auths
+    when isDuplicate $ throwError D.RegistrationErrorEmailTaken
+    -- update the state
+    let newUserId      = stateUserIdCounter state + 1
+        newAuths       = (newUserId, auth) : auths
+        unverifieds    = stateUnverifiedEmails state
+        newUnverifieds = insertMap vCode email unverifieds
+        newState       = state { stateAuths            = newAuths
+                               , stateUserIdCounter    = newUserId
+                               , stateUnverifiedEmails = newUnverifieds
+                               }
+    lift $ writeTVar tvar newState
+    return vCode
+
+
 
 setEmailAsVerified
   :: InMemory r m
