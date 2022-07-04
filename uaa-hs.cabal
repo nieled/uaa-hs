@@ -39,6 +39,7 @@ library
       aeson
     , base >=4.7 && <5
     , mono-traversable
+    , mtl
     , raw-strings-qq
     , regex-tdfa
     , safe-exceptions
@@ -62,6 +63,7 @@ executable uaa-hs-exe
       aeson
     , base >=4.7 && <5
     , mono-traversable
+    , mtl
     , raw-strings-qq
     , regex-tdfa
     , safe-exceptions
@@ -87,6 +89,7 @@ test-suite uaa-hs-test
       aeson
     , base >=4.7 && <5
     , mono-traversable
+    , mtl
     , raw-strings-qq
     , regex-tdfa
     , safe-exceptions
