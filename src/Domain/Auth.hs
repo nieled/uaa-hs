@@ -1,4 +1,32 @@
-module Domain.Auth where
+module Domain.Auth
+  (
+  -- * Types
+    Auth(..)
+  , Email
+  , mkEmail
+  , rawEmail
+  , Password
+  , mkPassword
+  , rawPassword
+  , UserId
+  , VerificationCode
+  , SessionId
+  , RegistrationError(..)
+  , EmailVerificationError(..)
+  , LoginError(..)
+
+  -- * Ports
+  , AuthRepo(..)
+  , EmailVerificationNotif(..)
+  , SessionRepo(..)
+
+  -- * Use cases
+  , register
+  , verifyEmail
+  , login
+  , resolveSessionId
+  , getUser
+  ) where
 
 import           Control.Monad.Except
     ( ExceptT (ExceptT)
@@ -9,6 +37,7 @@ import           Control.Monad.Except
 import           Data.Text            ( Text, unpack )
 import           Domain.Validation    ( lengthBetween, regexMatches, validate )
 import           Text.RawString.QQ    ( r )
+
 
 newtype Email
   = Email { emailRaw :: Text }
