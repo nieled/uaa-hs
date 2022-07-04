@@ -23,6 +23,7 @@ dependencies:
 - base >= 4.7 && < 5
 - aeson
 - mono-traversable
+- mtl
 - regex-tdfa
 - raw-strings-qq
 - safe-exceptions

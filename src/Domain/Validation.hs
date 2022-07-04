@@ -1,4 +1,5 @@
 module Domain.Validation where
+
 import           Data.Maybe           ( maybeToList )
 import           Data.MonoTraversable ( MonoFoldable (olength) )
 import           Data.Text            ( Text, length )
