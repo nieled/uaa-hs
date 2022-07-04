@@ -1,0 +1,13 @@
+cradle:
+  stack:
+    - path: "./src"
+      component: "uaa-hs:lib"
+
+    - path: "./app/Main.hs"
+      component: "uaa-hs:exe:uaa-hs-exe"
+
+    - path: "./app/Paths_uaa_hs.hs"
+      component: "uaa-hs:exe:uaa-hs-exe"
+
+    - path: "./test"
+      component: "uaa-hs:test:uaa-hs-test"
