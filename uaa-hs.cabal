@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      Adapter.InMemory.Auth
       Domain.Auth
       Domain.Validation
       Lib
@@ -33,16 +34,21 @@ library
   hs-source-dirs:
       src
   default-extensions:
+      ConstraintKinds
+      FlexibleContexts
       OverloadedStrings
       QuasiQuotes
   build-depends:
       aeson
     , base >=4.7 && <5
+    , containers
+    , data-has
     , mono-traversable
     , mtl
     , raw-strings-qq
     , regex-tdfa
     , safe-exceptions
+    , stm
     , template-haskell
     , text
     , time
@@ -56,17 +62,22 @@ executable uaa-hs-exe
   hs-source-dirs:
       app
   default-extensions:
+      ConstraintKinds
+      FlexibleContexts
       OverloadedStrings
       QuasiQuotes
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
     , base >=4.7 && <5
+    , containers
+    , data-has
     , mono-traversable
     , mtl
     , raw-strings-qq
     , regex-tdfa
     , safe-exceptions
+    , stm
     , template-haskell
     , text
     , time
@@ -82,17 +93,22 @@ test-suite uaa-hs-test
   hs-source-dirs:
       test
   default-extensions:
+      ConstraintKinds
+      FlexibleContexts
       OverloadedStrings
       QuasiQuotes
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
     , base >=4.7 && <5
+    , containers
+    , data-has
     , mono-traversable
     , mtl
     , raw-strings-qq
     , regex-tdfa
     , safe-exceptions
+    , stm
     , template-haskell
     , text
     , time

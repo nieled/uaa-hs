@@ -22,17 +22,22 @@ description:         Please see the README on GitHub at <https://github.com/niel
 dependencies:
 - base >= 4.7 && < 5
 - aeson
+- containers
+- data-has
 - mono-traversable
 - mtl
 - regex-tdfa
 - raw-strings-qq
 - safe-exceptions
+- stm
 - template-haskell
 - text
 - time
 - time-lens
 
 default-extensions:
+- ConstraintKinds
+- FlexibleContexts
 - OverloadedStrings
 - QuasiQuotes
 
