@@ -73,6 +73,7 @@ class Monad m => AuthRepo m where
   addAuth :: Auth -> m (Either RegistrationError VerificationCode)
   setEmailAsVerified :: VerificationCode -> m (Either EmailVerificationError ())
   findUserByAuth :: Auth -> m (Maybe (UserId, Bool))
+  findEmailFromUserId :: UserId -> m (Maybe Email)
 
 class Monad m => SessionRepo m where
   newSession :: UserId -> m SessionId
@@ -106,3 +107,6 @@ login auth = runExceptT $ do
 
 resolveSessionId :: SessionRepo m => SessionId -> m (Maybe UserId)
 resolveSessionId = findUserIdBySessionId
+
+getUser :: AuthRepo m => UserId -> m (Maybe Email)
+getUser = findEmailFromUserId
