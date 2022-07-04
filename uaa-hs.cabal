@@ -49,6 +49,7 @@ library
     , regex-tdfa
     , safe-exceptions
     , stm
+    , string-random
     , template-haskell
     , text
     , time
@@ -78,6 +79,7 @@ executable uaa-hs-exe
     , regex-tdfa
     , safe-exceptions
     , stm
+    , string-random
     , template-haskell
     , text
     , time
@@ -109,6 +111,7 @@ test-suite uaa-hs-test
     , regex-tdfa
     , safe-exceptions
     , stm
+    , string-random
     , template-haskell
     , text
     , time

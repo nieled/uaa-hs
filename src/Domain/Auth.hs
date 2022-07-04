@@ -65,10 +65,7 @@ mkPassword = validate Password
   ]
 
 type VerificationCode = Text
-newtype UserId
-  = UserId Int
-  deriving (Eq, Show)
-
+type UserId = Int
 type SessionId = Text
 data LoginError
   = LoginErrorInvalidAuth

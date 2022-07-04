@@ -30,6 +30,7 @@ dependencies:
 - raw-strings-qq
 - safe-exceptions
 - stm
+- string-random
 - template-haskell
 - text
 - time
