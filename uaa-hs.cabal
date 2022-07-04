@@ -38,6 +38,7 @@ library
   build-depends:
       aeson
     , base >=4.7 && <5
+    , mono-traversable
     , raw-strings-qq
     , regex-tdfa
     , safe-exceptions
@@ -60,6 +61,7 @@ executable uaa-hs-exe
   build-depends:
       aeson
     , base >=4.7 && <5
+    , mono-traversable
     , raw-strings-qq
     , regex-tdfa
     , safe-exceptions
@@ -84,6 +86,7 @@ test-suite uaa-hs-test
   build-depends:
       aeson
     , base >=4.7 && <5
+    , mono-traversable
     , raw-strings-qq
     , regex-tdfa
     , safe-exceptions
