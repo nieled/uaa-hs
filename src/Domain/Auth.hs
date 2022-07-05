@@ -41,7 +41,7 @@ import           Text.RawString.QQ    ( r )
 
 newtype Email
   = Email { emailRaw :: Text }
-  deriving (Eq, Show)
+  deriving (Eq, Ord, Show)
 rawEmail :: Email -> Text
 rawEmail = emailRaw
 mkEmail :: Text -> Either [EmailValidationErr] Email
@@ -65,8 +65,7 @@ mkPassword = validate Password
   ]
 
 type VerificationCode = Text
-newtype UserId
-  = UserId Int
+type UserId = Int
 type SessionId = Text
 data LoginError
   = LoginErrorInvalidAuth
