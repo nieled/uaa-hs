@@ -36,6 +36,7 @@ library
   default-extensions:
       ConstraintKinds
       FlexibleContexts
+      GeneralizedNewtypeDeriving
       OverloadedStrings
       QuasiQuotes
   build-depends:
@@ -65,6 +66,7 @@ executable uaa-hs-exe
   default-extensions:
       ConstraintKinds
       FlexibleContexts
+      GeneralizedNewtypeDeriving
       OverloadedStrings
       QuasiQuotes
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
@@ -97,6 +99,7 @@ test-suite uaa-hs-test
   default-extensions:
       ConstraintKinds
       FlexibleContexts
+      GeneralizedNewtypeDeriving
       OverloadedStrings
       QuasiQuotes
   ghc-options: -threaded -rtsopts -with-rtsopts=-N

@@ -39,6 +39,7 @@ dependencies:
 default-extensions:
 - ConstraintKinds
 - FlexibleContexts
+- GeneralizedNewtypeDeriving
 - OverloadedStrings
 - QuasiQuotes
 
