@@ -4,10 +4,13 @@ module Lib
 
 import qualified Adapter.InMemory.Auth  as M
 import           Control.Concurrent.STM ( TVar, newTVarIO )
+import           Control.Exception      ( bracket )
 import           Control.Monad.Reader
     ( MonadIO (..), MonadReader, ReaderT (..) )
 import           Debug.Trace            ( trace, traceId )
 import           Domain.Auth
+import           Katip
+import           System.IO              ( stdout )
 
 main :: IO ()
 main = do
@@ -48,3 +51,25 @@ instance EmailVerificationNotif App where
 instance SessionRepo App where
   newSession            = M.newSession
   findUserIdBySessionId = M.findUserIdBySessionId
+
+runKatip :: IO ()
+runKatip = withKatip $ \le -> do
+  let initialContext   = () -- this context will be attached to every log in your app and merged w/ subsequent contexts
+      initialNamespace = "main"
+  runKatipContextT le initialContext initialNamespace logSomething
+
+withKatip :: (LogEnv -> IO a) -> IO a
+withKatip = bracket createLogEnv closeScribes
+ where
+  createLogEnv = do
+    stdoutScribe <- mkHandleScribe ColorIfTerminal stdout (permitItem InfoS) V2
+    registerScribe "stdout" stdoutScribe defaultScribeSettings =<< initLogEnv "uaa-hs" "dev"
+
+logSomething :: (KatipContext m) => m ()
+logSomething = do
+  $(logTM) InfoS "Hello Katip"
+  -- This adds a namespace to the current namespace and merges a piece of contextual data into your context
+  katipAddNamespace "additional_namespace" $ katipAddContext (sl "some_context" True) $ do
+    $(logTM) WarningS "Now we're getting fancy"
+  katipNoLogging $ do
+    $(logTM) DebugS "You will never see this!"

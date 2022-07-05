@@ -24,6 +24,7 @@ dependencies:
 - aeson
 - containers
 - data-has
+- katip
 - mono-traversable
 - mtl
 - regex-tdfa
@@ -42,6 +43,7 @@ default-extensions:
 - GeneralizedNewtypeDeriving
 - OverloadedStrings
 - QuasiQuotes
+- TemplateHaskell
 
 library:
   source-dirs: src
