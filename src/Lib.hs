@@ -52,6 +52,8 @@ instance SessionRepo App where
   newSession            = M.newSession
   findUserIdBySessionId = M.findUserIdBySessionId
 
+----------------------------------------------------------------
+-- TODO: implement Katip
 runKatip :: IO ()
 runKatip = withKatip $ \le -> do
   let initialContext   = () -- this context will be attached to every log in your app and merged w/ subsequent contexts
@@ -63,7 +65,8 @@ withKatip = bracket createLogEnv closeScribes
  where
   createLogEnv = do
     stdoutScribe <- mkHandleScribe ColorIfTerminal stdout (permitItem InfoS) V2
-    registerScribe "stdout" stdoutScribe defaultScribeSettings =<< initLogEnv "uaa-hs" "dev"
+    registerScribe "stdout" stdoutScribe defaultScribeSettings
+      =<< initLogEnv "uaa-hs" "dev"
 
 logSomething :: (KatipContext m) => m ()
 logSomething = do
@@ -73,3 +76,4 @@ logSomething = do
     $(logTM) WarningS "Now we're getting fancy"
   katipNoLogging $ do
     $(logTM) DebugS "You will never see this!"
+----------------------------------------------------------------
