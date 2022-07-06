@@ -39,11 +39,13 @@ library
       GeneralizedNewtypeDeriving
       OverloadedStrings
       QuasiQuotes
+      TemplateHaskell
   build-depends:
       aeson
     , base >=4.7 && <5
     , containers
     , data-has
+    , katip
     , mono-traversable
     , mtl
     , raw-strings-qq
@@ -69,12 +71,14 @@ executable uaa-hs-exe
       GeneralizedNewtypeDeriving
       OverloadedStrings
       QuasiQuotes
+      TemplateHaskell
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
     , base >=4.7 && <5
     , containers
     , data-has
+    , katip
     , mono-traversable
     , mtl
     , raw-strings-qq
@@ -102,12 +106,14 @@ test-suite uaa-hs-test
       GeneralizedNewtypeDeriving
       OverloadedStrings
       QuasiQuotes
+      TemplateHaskell
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
     , base >=4.7 && <5
     , containers
     , data-has
+    , katip
     , mono-traversable
     , mtl
     , raw-strings-qq
