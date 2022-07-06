@@ -36,6 +36,8 @@ import           Control.Monad.Except
     )
 import           Data.Text            ( Text, unpack )
 import           Domain.Validation    ( lengthBetween, regexMatches, validate )
+import           Katip
+    ( KatipContext, Severity (InfoS), katipAddContext, logTM, ls, sl )
 import           Text.RawString.QQ    ( r )
 
 
@@ -98,8 +100,8 @@ data EmailVerificationError
 
 -- Registration
 class Monad m => AuthRepo m where
-  addAuth :: Auth -> m (Either RegistrationError VerificationCode)
-  setEmailAsVerified :: VerificationCode -> m (Either EmailVerificationError ())
+  addAuth :: Auth -> m (Either RegistrationError (UserId, VerificationCode))
+  setEmailAsVerified :: VerificationCode -> m (Either EmailVerificationError (UserId, Email))
   findUserByAuth :: Auth -> m (Maybe (UserId, Bool))
   findEmailFromUserId :: UserId -> m (Maybe Email)
 
@@ -110,28 +112,43 @@ class Monad m => SessionRepo m where
 class Monad m => EmailVerificationNotif m where
   notifyEmailVerification :: Email -> VerificationCode -> m ()
 
+withUserIdContext :: (KatipContext m) => UserId -> m a -> m a
+withUserIdContext userId = katipAddContext (sl "userId" userId)
+
 register
-  :: (AuthRepo m, EmailVerificationNotif m)
+  :: (KatipContext m, AuthRepo m, EmailVerificationNotif m)
   => Auth
   -> m (Either RegistrationError ())
 register auth = runExceptT $ do
-  verificationCode <- ExceptT $ addAuth auth
+  (userId, verificationCode) <- ExceptT $ addAuth auth
   let email = authEmail auth
   lift $ notifyEmailVerification email verificationCode
+  withUserIdContext userId $
+    $(logTM) InfoS $ ls (rawEmail email) <> " is registered successfully"
 
 verifyEmail
-  :: AuthRepo m
+  :: (KatipContext m, AuthRepo m)
   => VerificationCode
   -> m (Either EmailVerificationError ())
-verifyEmail = setEmailAsVerified
+verifyEmail verificationCode = runExceptT $ do
+  (userId, email) <- ExceptT $ setEmailAsVerified verificationCode
+  withUserIdContext userId $ do
+    $(logTM) InfoS $ ls (rawEmail email) <> " is verified successfully"
+  return ()
 
-login :: (AuthRepo m, SessionRepo m) => Auth -> m (Either LoginError SessionId)
+login
+  :: (KatipContext m, AuthRepo m, SessionRepo m)
+  => Auth
+  -> m (Either LoginError SessionId)
 login auth = runExceptT $ do
   result <- lift $ findUserByAuth auth
   case result of
     Nothing           -> throwError LoginErrorInvalidAuth
     Just (_  , False) -> throwError LoginErrorEmailNotVerified
-    Just (uId, _    ) -> lift $ newSession uId
+    Just (uId, _    ) -> withUserIdContext uId . lift $ do
+      sId <- newSession uId
+      $(logTM) InfoS $ ls (rawEmail $ authEmail auth) <> " logged in successfully"
+      return sId
 
 resolveSessionId :: SessionRepo m => SessionId -> m (Maybe UserId)
 resolveSessionId = findUserIdBySessionId

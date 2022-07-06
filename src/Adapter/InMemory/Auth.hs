@@ -2,7 +2,7 @@ module Adapter.InMemory.Auth where
 
 import           Control.Concurrent.STM
 import           Control.Monad.Except
-    ( MonadTrans (lift), runExceptT, throwError, when )
+    ( MonadError, MonadTrans (lift), runExceptT, throwError, when )
 import           Control.Monad.IO.Class ( MonadIO (liftIO) )
 import           Control.Monad.Reader   ( MonadReader, asks )
 import           Data.Containers        ( deleteMap, insertMap, insertSet )
@@ -13,7 +13,6 @@ import           Data.Set               as Set
 import           Data.Text              ( pack )
 import qualified Domain.Auth            as D
 import           Text.StringRandom      ( stringRandomIO )
-
 
 
 data State
@@ -44,7 +43,7 @@ type InMemory r m = (Has (TVar State) r, MonadReader r m, MonadIO m)
 addAuth
   :: InMemory r m
   => D.Auth
-  -> m (Either D.RegistrationError D.VerificationCode)
+  -> m (Either D.RegistrationError (D.UserId, D.VerificationCode))
 addAuth auth = do
   tvar  <- asks getter
   -- gen verification code
@@ -66,30 +65,34 @@ addAuth auth = do
                                , stateUnverifiedEmails = newUnverifieds
                                }
     lift $ writeTVar tvar newState
-    return vCode
+    return (newUserId, vCode)
 
-
+orThrow :: MonadError e m => Maybe a -> e -> m a
+orThrow Nothing e  = throwError e
+orThrow (Just a) _ = return a
 
 setEmailAsVerified
   :: InMemory r m
   => D.VerificationCode
-  -> m (Either D.EmailVerificationError ())
+  -> m (Either D.EmailVerificationError (D.UserId, D.Email))
 setEmailAsVerified vCode = do
   tvar <- asks getter
   liftIO . atomically . runExceptT $ do
     state <- lift $ readTVar tvar
     let unverifieds = stateUnverifiedEmails state
-        verifieds   = stateVerifiedEmails state
         mEmail      = Map.lookup vCode unverifieds
-    case mEmail of
-      Nothing    -> throwError D.EmailVerificationErrorInvalidCode
-      Just email -> do
-        let newUnverifieds = deleteMap vCode unverifieds
-            newVerifieds   = insertSet email verifieds
-            newState       = state { stateUnverifiedEmails = newUnverifieds
-                                   , stateVerifiedEmails   = newVerifieds
-                                   }
-        lift $ writeTVar tvar newState
+    email <- mEmail `orThrow` D.EmailVerificationErrorInvalidCode
+    let auths   = stateAuths state
+        mUserId = fst <$> find ((email ==) . D.authEmail . snd) auths
+    uId <- mUserId `orThrow` D.EmailVerificationErrorInvalidCode
+    let verifieds      = stateVerifiedEmails state
+        newVerifieds   = insertSet email verifieds
+        newUnverifieds = deleteMap vCode unverifieds
+        newState       = state { stateUnverifiedEmails = newUnverifieds
+                               , stateVerifiedEmails   = newVerifieds
+                               }
+    lift $ writeTVar tvar newState
+    return (uId, email)
 
 findUserByAuth
   :: InMemory r m
