@@ -48,8 +48,10 @@ library
     , katip
     , mono-traversable
     , mtl
+    , postgresql-simple
     , raw-strings-qq
     , regex-tdfa
+    , resource-pool
     , safe-exceptions
     , stm
     , string-random
@@ -81,8 +83,10 @@ executable uaa-hs-exe
     , katip
     , mono-traversable
     , mtl
+    , postgresql-simple
     , raw-strings-qq
     , regex-tdfa
+    , resource-pool
     , safe-exceptions
     , stm
     , string-random
@@ -116,8 +120,10 @@ test-suite uaa-hs-test
     , katip
     , mono-traversable
     , mtl
+    , postgresql-simple
     , raw-strings-qq
     , regex-tdfa
+    , resource-pool
     , safe-exceptions
     , stm
     , string-random
