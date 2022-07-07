@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.4.
+-- This file has been generated from package.yaml by hpack version 0.34.7.
 --
 -- see: https://github.com/sol/hpack
 
@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Adapter.InMemory.Auth
+      Adapter.PostgreSQL.Auth
       Domain.Auth
       Domain.Validation
       Lib
@@ -48,6 +49,7 @@ library
     , katip
     , mono-traversable
     , mtl
+    , postgresql-migration
     , postgresql-simple
     , raw-strings-qq
     , regex-tdfa
@@ -83,6 +85,7 @@ executable uaa-hs-exe
     , katip
     , mono-traversable
     , mtl
+    , postgresql-migration
     , postgresql-simple
     , raw-strings-qq
     , regex-tdfa
@@ -120,6 +123,7 @@ test-suite uaa-hs-test
     , katip
     , mono-traversable
     , mtl
+    , postgresql-migration
     , postgresql-simple
     , raw-strings-qq
     , regex-tdfa
