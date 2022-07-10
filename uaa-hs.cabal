@@ -47,6 +47,7 @@ library
     , bytestring
     , containers
     , data-has
+    , exceptions
     , katip
     , mono-traversable
     , mtl
@@ -84,6 +85,7 @@ executable uaa-hs-exe
     , bytestring
     , containers
     , data-has
+    , exceptions
     , katip
     , mono-traversable
     , mtl
@@ -123,6 +125,7 @@ test-suite uaa-hs-test
     , bytestring
     , containers
     , data-has
+    , exceptions
     , katip
     , mono-traversable
     , mtl

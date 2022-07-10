@@ -25,6 +25,7 @@ dependencies:
 - bytestring
 - containers
 - data-has
+- exceptions
 - katip
 - mono-traversable
 - mtl
