@@ -72,10 +72,14 @@ addAuth (D.Auth email pass) = do
     r <- stringRandomIO "[A-Za-z0-9]{16}"
     return $ rawEmail <> "_" <> r
   result <- withConn $ \conn ->
-    try $ query conn query (rawEmail, rawPassword, verificationCode)
+    try $ query conn sqlStr (rawEmail, rawPassword, verificationCode)
   case result of
     Right [Only userId] -> return $ Right $ (userId, verificationCode)
     Right _ -> throwString "Should not happen: PG doesn't return userId"
-    Left err@SqlError{} ->
-      throwString $ "Unhandled PG exception"
-  where query = undefined
+    Left err@SqlError{} -> throwString $ "Unhandled PG exception"
+ where
+  sqlStr
+    = "INSERT INTO auths \
+    \(email, pass, email_verification_code, is_email_verified) \
+    \VALUES (?, crypt(?, gen_salt('bf')), ?, 'f') \
+    \RETURNING id"
