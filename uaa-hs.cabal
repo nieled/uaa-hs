@@ -44,6 +44,7 @@ library
   build-depends:
       aeson
     , base >=4.7 && <5
+    , bytestring
     , containers
     , data-has
     , katip
@@ -80,6 +81,7 @@ executable uaa-hs-exe
   build-depends:
       aeson
     , base >=4.7 && <5
+    , bytestring
     , containers
     , data-has
     , katip
@@ -118,6 +120,7 @@ test-suite uaa-hs-test
   build-depends:
       aeson
     , base >=4.7 && <5
+    , bytestring
     , containers
     , data-has
     , katip
