@@ -15,6 +15,11 @@ import           Text.StringRandom
 
 type State = Pool Connection
 
+-- | Constraint synonym that states that m is a monad and:
+-- Perform IO action (via MonadIO)
+-- Throw an exception (via MonadThrow)
+-- Read r from environment (via MonadReader r)
+-- Get State from r (via Has State r)
 type PG r m = (Has State r, MonadReader r m, MonadIO m, MonadThrow m)
 
 data Config
