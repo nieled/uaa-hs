@@ -38,7 +38,7 @@ withState config action = withPool config $ \state -> do
   action state
 
 withPool :: Config -> (State -> IO a) -> IO a
-withPool config action = bracket initPool cleanPool action
+withPool config = bracket initPool cleanPool
  where
   initPool = createPool openConn
                         closeConn
@@ -79,7 +79,7 @@ addAuth (D.Auth email pass) = do
   result <- withConn $ \conn ->
     try $ query conn sqlStr (rawEmail, rawPassword, verificationCode)
   case result of
-    Right [Only userId] -> return $ Right $ (userId, verificationCode)
+    Right [Only userId] -> return $ Right (userId, verificationCode)
     Right _ -> throwString "Should not happen: PG doesn't return userId"
     Left err@SqlError { sqlState = state, sqlErrorMsg = msg } ->
       if state == "23505" && "auths_email_key" `isInfixOf` msg
