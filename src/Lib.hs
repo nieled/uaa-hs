@@ -2,20 +2,29 @@ module Lib
   ( main
   ) where
 
-import qualified Adapter.InMemory.Auth  as M
-import           Control.Concurrent.STM ( TVar, newTVarIO )
-import           Control.Exception      ( bracket )
+import qualified Adapter.InMemory.Auth   as M
+import qualified Adapter.PostgreSQL.Auth as PG
+import           Control.Concurrent.STM  ( TVar, newTVarIO )
+import           Control.Exception       ( bracket )
+import           Control.Monad.Catch     ( MonadThrow )
 import           Control.Monad.Reader
     ( MonadIO (..), MonadReader, ReaderT (..) )
-import           Debug.Trace            ( trace, traceId )
+import           Debug.Trace             ( trace, traceId )
 import           Domain.Auth
 import           Katip
-import           System.IO              ( stdout )
+import           System.IO               ( stdout )
 
 main :: IO ()
 main = withKatip $ \le -> do
   state <- newTVarIO M.initialState
-  run le state action
+  PG.withState pgCfg $ \pgState -> run le (pgState, state) action
+ where
+  -- TODO: parse from ENV variables
+  pgCfg = PG.Config { PG.configUrl = "postgresql://localhost/uaa"
+                    , PG.configStripeCount          = 2
+                    , PG.configMaxOpenConnPerStripe = 5
+                    , PG.configIdleConnTimeout      = 10
+                    }
 
 withKatip :: (LogEnv -> IO a) -> IO a
 withKatip = bracket createLogEnv closeScribes
@@ -39,7 +48,8 @@ action = do
   liftIO $ print (session, uId, registeredEmail)
   return ()
 
-type State = TVar M.State
+type State = (PG.State, TVar M.State)
+
 newtype App a
   = App { unApp :: ReaderT State (KatipContextT IO) a }
   -- = App { unApp :: KatipContextT (ReaderT State IO) a } -- same as above
@@ -52,16 +62,17 @@ newtype App a
     , MonadFail
     , MonadIO
     , MonadReader State
+    , MonadThrow
     )
 
 run :: LogEnv -> State -> App a -> IO a
 run le state = runKatipContextT le () mempty . flip runReaderT state . unApp
 
 instance AuthRepo App where
-  addAuth             = M.addAuth
-  setEmailAsVerified  = M.setEmailAsVerified
-  findUserByAuth      = M.findUserByAuth
-  findEmailFromUserId = M.findEmailFromUserId
+  addAuth             = PG.addAuth
+  setEmailAsVerified  = PG.setEmailAsVerified
+  findUserByAuth      = PG.findUserByAuth
+  findEmailFromUserId = PG.findEmailFromUserId
 
 instance EmailVerificationNotif App where
   notifyEmailVerification = M.notifyEmailVerification

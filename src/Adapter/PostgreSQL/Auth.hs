@@ -22,6 +22,7 @@ type State = Pool Connection
 -- Get State from r (via Has State r)
 type PG r m = (Has State r, MonadReader r m, MonadIO m, MonadThrow m)
 
+-- TODO: add default config
 data Config
   = Config
       { configUrl                  :: ByteString
