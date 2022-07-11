@@ -91,3 +91,24 @@ addAuth (D.Auth email pass) = do
     \(email, pass, email_verification_code, is_email_verified) \
     \VALUES (?, crypt(?, gen_salt('bf')), ?, 'f') \
     \RETURNING id"
+
+setEmailAsVerified
+  :: PG r m
+  => D.VerificationCode
+  -> m (Either D.EmailVerificationError (D.UserId, D.Email))
+setEmailAsVerified verificationCode = do
+  result <- withConn $ \conn -> query conn sqlStr (Only verificationCode)
+  case result of
+    [(userId, mail)] -> case D.mkEmail mail of
+      Right email -> return $ Right (userId, email)
+      _ ->
+        throwString
+          $  "Should not happen: email in DB is not valid: "
+          <> show mail
+    _ -> return $ Left D.EmailVerificationErrorInvalidCode
+ where
+  sqlStr
+    = "UPDATE auths \
+        \SET is_email_verified = 't' \
+        \WHERE email_verification_code = ? \
+        \RETURNING id, cast (email as text)"
