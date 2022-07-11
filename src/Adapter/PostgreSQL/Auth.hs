@@ -88,9 +88,9 @@ addAuth (D.Auth email pass) = do
  where
   sqlStr
     = "INSERT INTO auths \
-    \(email, pass, email_verification_code, is_email_verified) \
-    \VALUES (?, crypt(?, gen_salt('bf')), ?, 'f') \
-    \RETURNING id"
+        \(email, pass, email_verification_code, is_email_verified) \
+        \VALUES (?, crypt(?, gen_salt('bf')), ?, 'f') \
+        \RETURNING id"
 
 setEmailAsVerified
   :: PG r m
@@ -112,3 +112,20 @@ setEmailAsVerified verificationCode = do
         \SET is_email_verified = 't' \
         \WHERE email_verification_code = ? \
         \RETURNING id, cast (email as text)"
+
+findUserByAuth :: PG r m => D.Auth -> m (Maybe (D.UserId, Bool))
+findUserByAuth (D.Auth email pass) = do
+  let rawEmail    = D.rawEmail email
+      rawPassword = D.rawPassword pass
+  result <- withConn $ \conn -> query conn sqlStr (rawEmail, rawPassword)
+  return $ case result of
+    [(userId, isVerified)] -> Just (userId, isVerified)
+    _                      -> Nothing
+ where
+  sqlStr
+    = "SELECT id, is_email_verified \
+        \FROM auths \
+        \WHERE email = ? and pass = crypt(?, pass)"
+
+findEmailFromUserId :: PG r m => D.UserId -> m (Maybe D.Email)
+findEmailFromUserId = undefined
