@@ -128,4 +128,18 @@ findUserByAuth (D.Auth email pass) = do
         \WHERE email = ? and pass = crypt(?, pass)"
 
 findEmailFromUserId :: PG r m => D.UserId -> m (Maybe D.Email)
-findEmailFromUserId = undefined
+findEmailFromUserId userId = do
+  result <- withConn $ \conn -> query conn sqlStr (Only userId)
+  case result of
+    [Only mail] -> case D.mkEmail mail of
+      Right email -> return $ Just email
+      _ ->
+        throwString
+          $  "Should not happen, email in DB is not vali: "
+          <> show mail
+    _ -> return Nothing
+ where
+  sqlStr =
+    "SELECT cast(email as text) \
+        \FROM auths \
+        \WHERE id = ?"
