@@ -1,2 +1,3 @@
 .stack-work/
+.nix-shell/
 *~
