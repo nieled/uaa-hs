@@ -1,14 +1,15 @@
 module Adapter.Redis.Auth where
 
-import           Control.Exception.Safe         ( throwString )
-import           Control.Monad.Catch            ( MonadThrow )
-import           Control.Monad.Reader           ( MonadIO(..)
-                                                , MonadReader
-                                                , ReaderT(..)
-                                                )
+import           Control.Exception.Safe ( throwString )
+import           Control.Monad.Catch    ( MonadThrow )
+import           Control.Monad.Reader
+    ( MonadIO (..), MonadReader, ReaderT (..), asks )
+import           Data.ByteString.Char8  ( pack, unpack )
 import           Data.Has
-import qualified Database.Redis                as R
-import qualified Domain.Auth                   as D
+import           Data.Text.Encoding     ( decodeUtf8, encodeUtf8 )
+import qualified Database.Redis         as R
+import qualified Domain.Auth            as D
+import           Text.Read              ( readMaybe )
 import           Text.StringRandom
 
 type State = R.Connection
@@ -24,12 +25,26 @@ withState connURL action = do
       conn <- R.checkedConnect connInfo
       action conn
 
+-- | Helper function to execute `R.Redis` under `Redis r m` constraint
 withConn :: Redis r m => R.Redis a -> m a
 withConn action = do
-  undefined
+  conn <- asks getter
+  liftIO $ R.runRedis conn action
 
+-- | Creates a new session from a random string and store the kv sessionId:userId
 newSession :: Redis r m => D.UserId -> m D.SessionId
-newSession userId = undefined
+newSession userId = do
+  sId    <- liftIO $ stringRandomIO "[A-Za-z0-9]{16}"
+  result <- withConn $ R.set (encodeUtf8 sId) (pack . show $ userId)
+  case result of
+    Right R.Ok -> return sId
+    err        -> throwString $ "Unexpected Redis error: " <> show err
 
 findUserIdBySessionId :: Redis r m => D.SessionId -> m (Maybe D.UserId)
-findUserIdBySessionId = undefined
+findUserIdBySessionId sessionId = do
+  result <- withConn $ R.get (encodeUtf8 sessionId)
+  case result of
+    -- TODO: Maybe fixme
+    -- Right (Just userIdStr) -> return . readMaybe . unpack . decodeUtf8 $ userIdStr
+    Right (Just userIdStr) -> return . readMaybe . show $ userIdStr
+    err -> throwString $ "Unexpected Redis error: " <> show err
