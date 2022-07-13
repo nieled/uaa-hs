@@ -27,6 +27,7 @@ library
   exposed-modules:
       Adapter.InMemory.Auth
       Adapter.PostgreSQL.Auth
+      Adapter.Redis.Auth
       Domain.Auth
       Domain.Validation
       Lib
@@ -48,6 +49,7 @@ library
     , containers
     , data-has
     , exceptions
+    , hedis
     , katip
     , mono-traversable
     , mtl
@@ -86,6 +88,7 @@ executable uaa-hs-exe
     , containers
     , data-has
     , exceptions
+    , hedis
     , katip
     , mono-traversable
     , mtl
@@ -126,6 +129,7 @@ test-suite uaa-hs-test
     , containers
     , data-has
     , exceptions
+    , hedis
     , katip
     , mono-traversable
     , mtl
