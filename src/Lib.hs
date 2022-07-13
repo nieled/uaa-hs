@@ -14,7 +14,7 @@ import           Debug.Trace             ( trace, traceId )
 import           Domain.Auth
 import           Katip
 import           System.IO               ( stdout )
-
+import           Text.StringRandom
 
 main :: IO ()
 main = withKatip $ \le -> do
@@ -40,7 +40,8 @@ withKatip = bracket createLogEnv closeScribes
 
 action :: App ()
 action = do
-  let email = either undefined id $ mkEmail "nieled.003@riseup.net"
+  rndEmailSuffix    <- liftIO $ stringRandomIO "[a-z0-9]{4}"
+  let email = either undefined id . mkEmail $ "nieled." <> rndEmailSuffix <> "@riseup.net"
       passw = either undefined id $ mkPassword "iH8sn0w"
       auth  = Auth email passw
   register auth
