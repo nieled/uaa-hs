@@ -4,6 +4,7 @@ module Lib
 
 import qualified Adapter.InMemory.Auth   as M
 import qualified Adapter.PostgreSQL.Auth as PG
+import qualified Adapter.Redis.Auth      as Redis
 import           Control.Concurrent.STM  ( TVar, newTVarIO )
 import           Control.Exception       ( bracket )
 import           Control.Monad.Catch     ( MonadThrow )
@@ -14,10 +15,12 @@ import           Domain.Auth
 import           Katip
 import           System.IO               ( stdout )
 
+
 main :: IO ()
 main = withKatip $ \le -> do
-  state <- newTVarIO M.initialState
-  PG.withState pgCfg $ \pgState -> run le (pgState, state) action
+  memoryState <- newTVarIO M.initialState
+  PG.withState pgCfg $ \pgState -> Redis.withState redisCfg
+    $ \redisState -> run le (pgState, redisState, memoryState) action
  where
   -- TODO: parse from ENV variables
   pgCfg = PG.Config { PG.configUrl = "postgresql://localhost/uaa"
@@ -25,6 +28,7 @@ main = withKatip $ \le -> do
                     , PG.configMaxOpenConnPerStripe = 5
                     , PG.configIdleConnTimeout      = 10
                     }
+  redisCfg = "redis://localhost:6379/0"
 
 withKatip :: (LogEnv -> IO a) -> IO a
 withKatip = bracket createLogEnv closeScribes
@@ -36,7 +40,7 @@ withKatip = bracket createLogEnv closeScribes
 
 action :: App ()
 action = do
-  let email = either undefined id $ mkEmail "nieled@riseup.net"
+  let email = either undefined id $ mkEmail "nieled.001@riseup.net"
       passw = either undefined id $ mkPassword "iH8sn0w"
       auth  = Auth email passw
   register auth
@@ -48,7 +52,7 @@ action = do
   liftIO $ print (session, uId, registeredEmail)
   return ()
 
-type State = (PG.State, TVar M.State)
+type State = (PG.State, Redis.State, TVar M.State)
 
 newtype App a
   = App { unApp :: ReaderT State (KatipContextT IO) a }
@@ -78,5 +82,8 @@ instance EmailVerificationNotif App where
   notifyEmailVerification = M.notifyEmailVerification
 
 instance SessionRepo App where
-  newSession            = M.newSession
-  findUserIdBySessionId = M.findUserIdBySessionId
+  -- In-memory session mngmt
+  -- newSession            = M.newSession
+  -- findUserIdBySessionId = M.findUserIdBySessionId
+  newSession            = Redis.newSession
+  findUserIdBySessionId = Redis.findUserIdBySessionId
