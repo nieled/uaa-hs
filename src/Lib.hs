@@ -40,7 +40,7 @@ withKatip = bracket createLogEnv closeScribes
 
 action :: App ()
 action = do
-  let email = either undefined id $ mkEmail "nieled.001@riseup.net"
+  let email = either undefined id $ mkEmail "nieled.003@riseup.net"
       passw = either undefined id $ mkPassword "iH8sn0w"
       auth  = Auth email passw
   register auth

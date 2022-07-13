@@ -4,8 +4,9 @@ import           Control.Exception.Safe ( throwString )
 import           Control.Monad.Catch    ( MonadThrow )
 import           Control.Monad.Reader
     ( MonadIO (..), MonadReader, ReaderT (..), asks )
-import           Data.ByteString.Char8  ( pack, unpack )
+import           Data.ByteString.Char8  ( pack )
 import           Data.Has
+import           Data.Text              ( unpack )
 import           Data.Text.Encoding     ( decodeUtf8, encodeUtf8 )
 import qualified Database.Redis         as R
 import qualified Domain.Auth            as D
@@ -44,7 +45,6 @@ findUserIdBySessionId :: Redis r m => D.SessionId -> m (Maybe D.UserId)
 findUserIdBySessionId sessionId = do
   result <- withConn $ R.get (encodeUtf8 sessionId)
   case result of
-    -- TODO: Maybe fixme
-    -- Right (Just userIdStr) -> return . readMaybe . unpack . decodeUtf8 $ userIdStr
-    Right (Just userIdStr) -> return . readMaybe . show $ userIdStr
+    Right (Just userIdStr) ->
+      return . readMaybe . unpack . decodeUtf8 $ userIdStr
     err -> throwString $ "Unexpected Redis error: " <> show err
