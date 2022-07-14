@@ -1,2 +1,4 @@
 .stack-work/
+.nix-shell/
+dump.rdb
 *~

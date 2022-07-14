@@ -2,20 +2,33 @@ module Lib
   ( main
   ) where
 
-import qualified Adapter.InMemory.Auth  as M
-import           Control.Concurrent.STM ( TVar, newTVarIO )
-import           Control.Exception      ( bracket )
+import qualified Adapter.InMemory.Auth   as M
+import qualified Adapter.PostgreSQL.Auth as PG
+import qualified Adapter.Redis.Auth      as Redis
+import           Control.Concurrent.STM  ( TVar, newTVarIO )
+import           Control.Exception       ( bracket )
+import           Control.Monad.Catch     ( MonadThrow )
 import           Control.Monad.Reader
     ( MonadIO (..), MonadReader, ReaderT (..) )
-import           Debug.Trace            ( trace, traceId )
+import           Debug.Trace             ( trace, traceId )
 import           Domain.Auth
 import           Katip
-import           System.IO              ( stdout )
+import           System.IO               ( stdout )
+import           Text.StringRandom
 
 main :: IO ()
 main = withKatip $ \le -> do
-  state <- newTVarIO M.initialState
-  run le state action
+  memoryState <- newTVarIO M.initialState
+  PG.withState pgCfg $ \pgState -> Redis.withState redisCfg
+    $ \redisState -> run le (pgState, redisState, memoryState) action
+ where
+  -- TODO: parse from ENV variables
+  pgCfg = PG.Config { PG.configUrl = "postgresql://localhost/uaa"
+                    , PG.configStripeCount          = 2
+                    , PG.configMaxOpenConnPerStripe = 5
+                    , PG.configIdleConnTimeout      = 10
+                    }
+  redisCfg = "redis://localhost:6379/0"
 
 withKatip :: (LogEnv -> IO a) -> IO a
 withKatip = bracket createLogEnv closeScribes
@@ -27,7 +40,8 @@ withKatip = bracket createLogEnv closeScribes
 
 action :: App ()
 action = do
-  let email = either undefined id $ mkEmail "nieled@riseup.net"
+  rndEmailSuffix    <- liftIO $ stringRandomIO "[a-z0-9]{4}"
+  let email = either undefined id . mkEmail $ "nieled." <> rndEmailSuffix <> "@riseup.net"
       passw = either undefined id $ mkPassword "iH8sn0w"
       auth  = Auth email passw
   register auth
@@ -39,7 +53,8 @@ action = do
   liftIO $ print (session, uId, registeredEmail)
   return ()
 
-type State = TVar M.State
+type State = (PG.State, Redis.State, TVar M.State)
+
 newtype App a
   = App { unApp :: ReaderT State (KatipContextT IO) a }
   -- = App { unApp :: KatipContextT (ReaderT State IO) a } -- same as above
@@ -52,20 +67,24 @@ newtype App a
     , MonadFail
     , MonadIO
     , MonadReader State
+    , MonadThrow
     )
 
 run :: LogEnv -> State -> App a -> IO a
 run le state = runKatipContextT le () mempty . flip runReaderT state . unApp
 
 instance AuthRepo App where
-  addAuth             = M.addAuth
-  setEmailAsVerified  = M.setEmailAsVerified
-  findUserByAuth      = M.findUserByAuth
-  findEmailFromUserId = M.findEmailFromUserId
+  addAuth             = PG.addAuth
+  setEmailAsVerified  = PG.setEmailAsVerified
+  findUserByAuth      = PG.findUserByAuth
+  findEmailFromUserId = PG.findEmailFromUserId
 
 instance EmailVerificationNotif App where
   notifyEmailVerification = M.notifyEmailVerification
 
 instance SessionRepo App where
-  newSession            = M.newSession
-  findUserIdBySessionId = M.findUserIdBySessionId
+  -- In-memory session mngmt
+  -- newSession            = M.newSession
+  -- findUserIdBySessionId = M.findUserIdBySessionId
+  newSession            = Redis.newSession
+  findUserIdBySessionId = Redis.findUserIdBySessionId

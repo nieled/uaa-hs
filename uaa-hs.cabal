@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.4.
+-- This file has been generated from package.yaml by hpack version 0.34.7.
 --
 -- see: https://github.com/sol/hpack
 
@@ -26,6 +26,8 @@ source-repository head
 library
   exposed-modules:
       Adapter.InMemory.Auth
+      Adapter.PostgreSQL.Auth
+      Adapter.Redis.Auth
       Domain.Auth
       Domain.Validation
       Lib
@@ -43,13 +45,19 @@ library
   build-depends:
       aeson
     , base >=4.7 && <5
+    , bytestring
     , containers
     , data-has
+    , exceptions
+    , hedis
     , katip
     , mono-traversable
     , mtl
+    , postgresql-migration
+    , postgresql-simple
     , raw-strings-qq
     , regex-tdfa
+    , resource-pool
     , safe-exceptions
     , stm
     , string-random
@@ -76,13 +84,19 @@ executable uaa-hs-exe
   build-depends:
       aeson
     , base >=4.7 && <5
+    , bytestring
     , containers
     , data-has
+    , exceptions
+    , hedis
     , katip
     , mono-traversable
     , mtl
+    , postgresql-migration
+    , postgresql-simple
     , raw-strings-qq
     , regex-tdfa
+    , resource-pool
     , safe-exceptions
     , stm
     , string-random
@@ -111,13 +125,19 @@ test-suite uaa-hs-test
   build-depends:
       aeson
     , base >=4.7 && <5
+    , bytestring
     , containers
     , data-has
+    , exceptions
+    , hedis
     , katip
     , mono-traversable
     , mtl
+    , postgresql-migration
+    , postgresql-simple
     , raw-strings-qq
     , regex-tdfa
+    , resource-pool
     , safe-exceptions
     , stm
     , string-random
