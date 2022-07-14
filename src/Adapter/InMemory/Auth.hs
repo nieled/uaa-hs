@@ -1,29 +1,37 @@
 module Adapter.InMemory.Auth where
 
 import           Control.Concurrent.STM
-import           Control.Monad.Except
-    ( MonadError, MonadTrans (lift), runExceptT, throwError, when )
-import           Control.Monad.IO.Class ( MonadIO (liftIO) )
-import           Control.Monad.Reader   ( MonadReader, asks )
-import           Data.Containers        ( deleteMap, insertMap, insertSet )
-import           Data.Foldable          ( find )
-import           Data.Has               ( Has (getter) )
-import           Data.Map               as Map
-import           Data.Set               as Set
-import           Data.Text              ( pack )
-import qualified Domain.Auth            as D
-import           Text.StringRandom      ( stringRandomIO )
+import           Control.Monad.Except           ( MonadError
+                                                , MonadTrans(lift)
+                                                , runExceptT
+                                                , throwError
+                                                , when
+                                                )
+import           Control.Monad.IO.Class         ( MonadIO(liftIO) )
+import           Control.Monad.Reader           ( MonadReader
+                                                , asks
+                                                )
+import           Data.Containers                ( deleteMap
+                                                , insertMap
+                                                , insertSet
+                                                )
+import           Data.Foldable                  ( find )
+import           Data.Has                       ( Has(getter) )
+import           Data.Map                      as Map
+import           Data.Set                      as Set
+import           Data.Text                      ( pack )
+import qualified Domain.Auth                   as D
+import           Text.StringRandom              ( stringRandomIO )
 
 
-data State
-  = State
-      { stateAuths            :: [(D.UserId, D.Auth)]
-      , stateUnverifiedEmails :: Map D.VerificationCode D.Email
-      , stateVerifiedEmails   :: Set D.Email
-      , stateUserIdCounter    :: Int
-      , stateNotifications    :: Map D.Email D.VerificationCode
-      , stateSessions         :: Map D.SessionId D.UserId
-      }
+data State = State
+  { stateAuths            :: [(D.UserId, D.Auth)]
+  , stateUnverifiedEmails :: Map D.VerificationCode D.Email
+  , stateVerifiedEmails   :: Set D.Email
+  , stateUserIdCounter    :: Int
+  , stateNotifications    :: Map D.Email D.VerificationCode
+  , stateSessions         :: Map D.SessionId D.UserId
+  }
   deriving (Eq, Show)
 
 initialState :: State
@@ -68,7 +76,7 @@ addAuth auth = do
     return (newUserId, vCode)
 
 orThrow :: MonadError e m => Maybe a -> e -> m a
-orThrow Nothing e  = throwError e
+orThrow Nothing  e = throwError e
 orThrow (Just a) _ = return a
 
 setEmailAsVerified
@@ -94,10 +102,7 @@ setEmailAsVerified vCode = do
     lift $ writeTVar tvar newState
     return (uId, email)
 
-findUserByAuth
-  :: InMemory r m
-  => D.Auth
-  -> m (Maybe (D.UserId, Bool))
+findUserByAuth :: InMemory r m => D.Auth -> m (Maybe (D.UserId, Bool))
 findUserByAuth auth = do
   tvar  <- asks getter
   state <- liftIO $ readTVarIO tvar
@@ -110,10 +115,7 @@ findUserByAuth auth = do
           isVerified = email `elem` verifieds
       return $ Just (uId, isVerified)
 
-findEmailFromUserId
-  :: InMemory r m
-  => D.UserId
-  -> m (Maybe D.Email)
+findEmailFromUserId :: InMemory r m => D.UserId -> m (Maybe D.Email)
 findEmailFromUserId uId = do
   tvar  <- asks getter
   state <- liftIO $ readTVarIO tvar
@@ -124,19 +126,14 @@ findEmailFromUserId uId = do
 -- This implementation fakes sending notifications by storing it in memory,
 -- there is no way to get the verification code unless we provide a function to get it.
 getNotificationsForEmail
-  :: InMemory r m
-  => D.Email
-  -> m (Maybe D.VerificationCode)
+  :: InMemory r m => D.Email -> m (Maybe D.VerificationCode)
 getNotificationsForEmail email = do
   tvar  <- asks getter
   state <- liftIO $ readTVarIO tvar
   return $ Map.lookup email $ stateNotifications state
 
 notifyEmailVerification
-  :: InMemory r m
-  => D.Email
-  -> D.VerificationCode
-  -> m ()
+  :: InMemory r m => D.Email -> D.VerificationCode -> m ()
 notifyEmailVerification email vCode = do
   tvar <- asks getter
   liftIO . atomically $ do
@@ -146,10 +143,7 @@ notifyEmailVerification email vCode = do
         newState         = state { stateNotifications = newNotifications }
     writeTVar tvar newState
 
-newSession
-  :: InMemory r m
-  => D.UserId
-  -> m D.SessionId
+newSession :: InMemory r m => D.UserId -> m D.SessionId
 newSession uId = do
   tvar <- asks getter
   sId  <- liftIO $ ((pack . show $ uId) <>) <$> stringRandomIO "[A-Za-z0-9]{16}"
@@ -161,10 +155,7 @@ newSession uId = do
     writeTVar tvar newState
     return sId
 
-findUserIdBySessionId
-  :: InMemory r m
-  => D.SessionId
-  -> m (Maybe D.UserId)
+findUserIdBySessionId :: InMemory r m => D.SessionId -> m (Maybe D.UserId)
 findUserIdBySessionId sId = do
   tvar <- asks getter
   liftIO $ Map.lookup sId . stateSessions <$> readTVarIO tvar

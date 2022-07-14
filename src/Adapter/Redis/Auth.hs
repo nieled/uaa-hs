@@ -1,16 +1,21 @@
 module Adapter.Redis.Auth where
 
-import           Control.Exception.Safe ( throwString )
-import           Control.Monad.Catch    ( MonadThrow )
-import           Control.Monad.Reader
-    ( MonadIO (..), MonadReader, ReaderT (..), asks )
-import           Data.ByteString.Char8  ( pack )
+import           Control.Exception.Safe         ( throwString )
+import           Control.Monad.Catch            ( MonadThrow )
+import           Control.Monad.Reader           ( MonadIO(..)
+                                                , MonadReader
+                                                , ReaderT(..)
+                                                , asks
+                                                )
+import           Data.ByteString.Char8          ( pack )
 import           Data.Has
-import           Data.Text              ( unpack )
-import           Data.Text.Encoding     ( decodeUtf8, encodeUtf8 )
-import qualified Database.Redis         as R
-import qualified Domain.Auth            as D
-import           Text.Read              ( readMaybe )
+import           Data.Text                      ( unpack )
+import           Data.Text.Encoding             ( decodeUtf8
+                                                , encodeUtf8
+                                                )
+import qualified Database.Redis                as R
+import qualified Domain.Auth                   as D
+import           Text.Read                      ( readMaybe )
 import           Text.StringRandom
 
 type State = R.Connection

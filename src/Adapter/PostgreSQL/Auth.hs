@@ -1,8 +1,10 @@
 module Adapter.PostgreSQL.Auth where
 
-import           Control.Exception                             ( bracket, try )
-import           Control.Exception.Safe                        ( throwString )
-import           Control.Monad.Catch                           ( MonadThrow )
+import           Control.Exception              ( bracket
+                                                , try
+                                                )
+import           Control.Exception.Safe         ( throwString )
+import           Control.Monad.Catch            ( MonadThrow )
 import           Control.Monad.Reader
 import           Data.ByteString
 import           Data.Has
@@ -10,7 +12,7 @@ import           Data.Pool
 import           Data.Time
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.Migration.V1Compat
-import qualified Domain.Auth                                   as D
+import qualified Domain.Auth                   as D
 import           Text.StringRandom
 
 type State = Pool Connection
@@ -23,13 +25,12 @@ type State = Pool Connection
 type PG r m = (Has State r, MonadReader r m, MonadIO m, MonadThrow m)
 
 -- TODO: add default config
-data Config
-  = Config
-      { configUrl                  :: ByteString
-      , configStripeCount          :: Int
-      , configMaxOpenConnPerStripe :: Int
-      , configIdleConnTimeout      :: NominalDiffTime
-      }
+data Config = Config
+  { configUrl                  :: ByteString
+  , configStripeCount          :: Int
+  , configMaxOpenConnPerStripe :: Int
+  , configIdleConnTimeout      :: NominalDiffTime
+  }
 
 -- | Calls `withPool` and immediately executes migrations before
 -- executing the `action`
