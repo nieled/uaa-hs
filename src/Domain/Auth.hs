@@ -28,18 +28,26 @@ module Domain.Auth
   , getUser
   ) where
 
-import           Control.Monad.Except
-    ( ExceptT (ExceptT)
-    , MonadError (throwError)
-    , MonadTrans (lift)
-    , runExceptT
-    )
-import           Data.Text            ( Text, unpack )
-import           Domain.Validation    ( lengthBetween, regexMatches, validate )
-import           Katip
-    ( KatipContext, Severity (InfoS), katipAddContext, logTM, ls, sl )
-import           Text.RawString.QQ    ( r )
-
+import           Control.Monad.Except           ( ExceptT(ExceptT)
+                                                , MonadError(throwError)
+                                                , MonadTrans(lift)
+                                                , runExceptT
+                                                )
+import           Data.Text                      ( Text
+                                                , unpack
+                                                )
+import           Domain.Validation              ( lengthBetween
+                                                , regexMatches
+                                                , validate
+                                                )
+import           Katip                          ( KatipContext
+                                                , Severity(InfoS)
+                                                , katipAddContext
+                                                , logTM
+                                                , ls
+                                                , sl
+                                                )
+import           Text.RawString.QQ              ( r )
 
 newtype Email
   = Email { emailRaw :: Text }
@@ -74,19 +82,16 @@ data LoginError
   | LoginErrorEmailNotVerified
   deriving (Eq, Show)
 
-data Auth
-  = Auth
-      { authEmail    :: Email
-      , authPassword :: Password
-      }
+data Auth = Auth
+  { authEmail    :: Email
+  , authPassword :: Password
+  }
   deriving (Eq, Show)
 
 -- Errors
-data RegistrationError
-  = RegistrationErrorEmailTaken
+data RegistrationError = RegistrationErrorEmailTaken
   deriving (Eq, Show)
-data EmailValidationErr
-  = EmailValidationErrInvalidEmail
+data EmailValidationErr = EmailValidationErrInvalidEmail
   deriving (Eq, Show)
 data PasswordValidationErr
   = PasswordValidationErrLength
@@ -94,8 +99,7 @@ data PasswordValidationErr
   | PasswordValidationErrMustContainLowerCase
   | PasswordValidationErrMustContainNumber
   deriving (Show)
-data EmailVerificationError
-  = EmailVerificationErrorInvalidCode
+data EmailVerificationError = EmailVerificationErrorInvalidCode
   deriving (Eq, Show)
 
 -- Registration
@@ -123,8 +127,10 @@ register auth = runExceptT $ do
   (userId, verificationCode) <- ExceptT $ addAuth auth
   let email = authEmail auth
   lift $ notifyEmailVerification email verificationCode
-  withUserIdContext userId $
-    $(logTM) InfoS $ ls (rawEmail email) <> " is registered successfully"
+  withUserIdContext userId
+    $  $(logTM) InfoS
+    $  ls (rawEmail email)
+    <> " is registered successfully"
 
 verifyEmail
   :: (KatipContext m, AuthRepo m)
@@ -147,7 +153,9 @@ login auth = runExceptT $ do
     Just (_  , False) -> throwError LoginErrorEmailNotVerified
     Just (uId, _    ) -> withUserIdContext uId . lift $ do
       sId <- newSession uId
-      $(logTM) InfoS $ ls (rawEmail $ authEmail auth) <> " logged in successfully"
+      $(logTM) InfoS
+        $  ls (rawEmail $ authEmail auth)
+        <> " logged in successfully"
       return sId
 
 resolveSessionId :: SessionRepo m => SessionId -> m (Maybe UserId)
