@@ -8,12 +8,21 @@ data State = State
   , stateConsumerChannel  :: Channel
   }
 
-withState :: String -> Integer -> (State -> IO a) -> IO a
+-- | Initialize RabbitMQ state, do the action, and destroy the state.
+withState
+  :: String
+  -- ^ Connection URL
+  -> Integer
+  -- ^ Prefetch count (Maximum number of messages to be received without confirmation)
+  -> (State -> IO a)
+  -- ^ Action to be carried out having constructed the state
+  -> IO a
 withState connectionUri prefetchCount action = bracket initState
                                                        destroyState
                                                        action'
  where
   initState = do
+    -- It’s considered a best practice to separate the connection between publisher and consumer
     publisher <- openConnectionAndChannel
     consumer  <- openConnectionAndChannel
     return (publisher, consumer)
@@ -26,5 +35,5 @@ withState connectionUri prefetchCount action = bracket initState
   destroyState ((connection1, _), (connection2, _)) = do
     closeConnection connection1
     closeConnection connection2
-  action' ((_, pubChannel), (_, conChannel)) =
-    action (State pubChannel conChannel)
+  action' ((_, publisherChannel), (_, consumerChannel)) =
+    action (State publisherChannel consumerChannel)
