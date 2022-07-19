@@ -27,6 +27,7 @@ library
   exposed-modules:
       Adapter.InMemory.Auth
       Adapter.PostgreSQL.Auth
+      Adapter.RabbitMQ.Common
       Adapter.Redis.Auth
       Domain.Auth
       Domain.Validation
@@ -44,6 +45,7 @@ library
       TemplateHaskell
   build-depends:
       aeson
+    , amqp
     , base >=4.7 && <5
     , bytestring
     , containers
@@ -83,6 +85,7 @@ executable uaa-hs-exe
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
+    , amqp
     , base >=4.7 && <5
     , bytestring
     , containers
@@ -124,6 +127,7 @@ test-suite uaa-hs-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
+    , amqp
     , base >=4.7 && <5
     , bytestring
     , containers
