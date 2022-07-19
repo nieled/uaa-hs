@@ -1,5 +1,6 @@
 module Adapter.RabbitMQ.Common where
 
+import           Control.Concurrent             ( forkIO )
 import           Control.Exception              ( bracket )
 import           Control.Monad                  ( void )
 import           Data.Text                      ( Text )
@@ -56,3 +57,11 @@ initQueue state queueName exchangeName routingKey = do
   void $ declareQueue (statePublisherChannel state)
                       (newQueue { queueName = queueName })
   bindQueue (statePublisherChannel state) queueName exchangeName routingKey
+
+initConsumer :: State -> Text -> (Message -> IO Bool) -> IO ()
+initConsumer state queueName handler = do
+  void
+    . consumeMsgs (stateConsumerChannel state) queueName Ack
+    $ \(message, env) -> void . forkIO $ do
+        result <- handler message
+        if result then ackEnv env else rejectEnv env False
