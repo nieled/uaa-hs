@@ -1,6 +1,8 @@
 module Adapter.RabbitMQ.Common where
 
 import           Control.Exception              ( bracket )
+import           Control.Monad                  ( void )
+import           Data.Text                      ( Text )
 import           Network.AMQP
 
 data State = State
@@ -37,3 +39,20 @@ withState connectionUri prefetchCount action = bracket initState
     closeConnection connection2
   action' ((_, publisherChannel), (_, consumerChannel)) =
     action (State publisherChannel consumerChannel)
+
+-- | Create a exchange hard-coded as "topic"
+-- Does not matter if using publisher or consumer to open the exchange
+initExchange :: State -> Text -> IO ()
+initExchange (State publisherChannel _) exchangeName = do
+  let exchange =
+        newExchange { exchangeName = exchangeName, exchangeType = "topic" }
+  declareExchange publisherChannel exchange
+
+-- | Create a queue along with an exchange and the binding
+-- NOTE: Declaring an exchange is an idempotent operation
+initQueue :: State -> Text -> Text -> Text -> IO ()
+initQueue state queueName exchangeName routingKey = do
+  initExchange state exchangeName
+  void $ declareQueue (statePublisherChannel state)
+                      (newQueue { queueName = queueName })
+  bindQueue (statePublisherChannel state) queueName exchangeName routingKey
