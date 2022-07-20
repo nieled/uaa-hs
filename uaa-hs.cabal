@@ -27,6 +27,7 @@ library
   exposed-modules:
       Adapter.InMemory.Auth
       Adapter.PostgreSQL.Auth
+      Adapter.RabbitMQ.Auth
       Adapter.RabbitMQ.Common
       Adapter.Redis.Auth
       Domain.Auth
