@@ -1,15 +1,15 @@
 module Adapter.RabbitMQ.Common where
 
 import           Control.Concurrent             ( forkIO )
-import           Control.Exception              ( bracket )
-import           Control.Exception.Safe         ( tryAny )
-import           Control.Monad                  ( void )
-import           Control.Monad.Catch            ( MonadCatch
+import           Control.Exception.Safe         ( MonadCatch
+                                                , bracket
                                                 , displayException
+                                                , tryAny
                                                 )
-import           Control.Monad.IO.Class         ( MonadIO(liftIO) )
-import           Control.Monad.Reader           ( MonadReader
+import           Control.Monad.Reader           ( MonadIO(..)
+                                                , MonadReader
                                                 , asks
+                                                , void
                                                 )
 import           Data.Aeson
 import           Data.Has
@@ -104,8 +104,9 @@ consumeAndProcess message handler = case eitherDecode' (msgBody message) of
     result <- tryAny (handler payload)
     case result of
       Left error -> withMsgAndErr message (displayException error) $ do
-        $(logTM) ErrorS
-                 "There was an exception when processing the message. Rejecting."
+        $(logTM)
+          ErrorS
+          "There was an exception when processing the message. Rejecting."
         return False
       Right bool -> return bool
 
