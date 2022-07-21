@@ -27,13 +27,18 @@ import           System.IO                      ( stdout )
 import           Text.StringRandom
 
 main :: IO ()
-main = withKatip $ \le -> do
+main = withState $ \le state@(_, _, mqState, _) -> do
+  let runner = run le state
+  MQAuth.init mqState runner
+  runner action
+
+withState :: (LogEnv -> State -> IO ()) -> IO ()
+withState action = withKatip $ \le -> do
   memoryState <- newTVarIO M.initialState
   PG.withState pgCfg $ \pgState -> Redis.withState redisCfg $ \redisState ->
     MQ.withState mqCfg 16 $ \mqState -> do
-      let runner = run le (pgState, redisState, mqState, memoryState)
-      MQAuth.init mqState runner
-      runner action
+      let state = (pgState, redisState, mqState, memoryState)
+      action le state
  where
   -- TODO: parse from ENV variables
   mqCfg = "amqp://guest:guest@localhost:5672/%2F"
