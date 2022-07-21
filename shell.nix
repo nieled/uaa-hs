@@ -30,6 +30,7 @@ pkgs.mkShell {
     pkgs.haskell-language-server
     # pkgs.haskell-language-server.override { supportedGhcVersions = ["884", "901"] }
     pkgs.postgresql
+    pkgs.rabbitmq-server
     pkgs.redis
   ];
 
