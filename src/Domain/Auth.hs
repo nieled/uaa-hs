@@ -1,3 +1,4 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module Domain.Auth
   (
   -- * Types
@@ -48,6 +49,8 @@ import           Katip                          ( KatipContext
                                                 , sl
                                                 )
 import           Text.RawString.QQ              ( r )
+import           Data.Aeson
+import           Data.Aeson.TH
 
 newtype Email
   = Email { emailRaw :: Text }
@@ -163,3 +166,5 @@ resolveSessionId = findUserIdBySessionId
 
 getUser :: AuthRepo m => UserId -> m (Maybe Email)
 getUser = findEmailFromUserId
+
+$(deriveJSON defaultOptions ''EmailValidationErr)

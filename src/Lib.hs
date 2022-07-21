@@ -4,12 +4,16 @@ module Lib
 
 import qualified Adapter.InMemory.Auth         as M
 import qualified Adapter.PostgreSQL.Auth       as PG
+import qualified Adapter.RabbitMQ.Auth         as MQAuth
+import qualified Adapter.RabbitMQ.Common       as MQ
 import qualified Adapter.Redis.Auth            as Redis
 import           Control.Concurrent.STM         ( TVar
                                                 , newTVarIO
                                                 )
 import           Control.Exception              ( bracket )
-import           Control.Monad.Catch            ( MonadThrow )
+import           Control.Monad.Catch            ( MonadCatch
+                                                , MonadThrow
+                                                )
 import           Control.Monad.Reader           ( MonadIO(..)
                                                 , MonadReader
                                                 , ReaderT(..)
@@ -23,12 +27,21 @@ import           System.IO                      ( stdout )
 import           Text.StringRandom
 
 main :: IO ()
-main = withKatip $ \le -> do
+main = withState $ \le state@(_, _, mqState, _) -> do
+  let runner = run le state
+  MQAuth.init mqState runner
+  runner action
+
+withState :: (LogEnv -> State -> IO ()) -> IO ()
+withState action = withKatip $ \le -> do
   memoryState <- newTVarIO M.initialState
-  PG.withState pgCfg $ \pgState -> Redis.withState redisCfg
-    $ \redisState -> run le (pgState, redisState, memoryState) action
+  PG.withState pgCfg $ \pgState -> Redis.withState redisCfg $ \redisState ->
+    MQ.withState mqCfg 16 $ \mqState -> do
+      let state = (pgState, redisState, mqState, memoryState)
+      action le state
  where
   -- TODO: parse from ENV variables
+  mqCfg = "amqp://guest:guest@localhost:5672/%2F"
   pgCfg = PG.Config { PG.configUrl = "postgresql://localhost/uaa"
                     , PG.configStripeCount          = 2
                     , PG.configMaxOpenConnPerStripe = 5
@@ -46,25 +59,26 @@ withKatip = bracket createLogEnv closeScribes
 
 action :: App ()
 action = do
-  rndEmailSuffix <- liftIO $ stringRandomIO "[a-z0-9]{4}"
-  let email =
-        either undefined id
-          .  mkEmail
-          $  "nieled."
-          <> rndEmailSuffix
-          <> "@riseup.net"
+  rndEmail <- liftIO $ stringRandomIO "[a-z0-9]{5}@test\\.com"
+  let email = either undefined id . mkEmail $ rndEmail
       passw = either undefined id $ mkPassword "iH8sn0w"
       auth  = Auth email passw
   register auth
-  Just vCode <- M.getNotificationsForEmail email
-  verifyEmail vCode
+  verificationCode <- pollNotif email
+  verifyEmail verificationCode
   Right session         <- login auth
-  Just  uId             <- resolveSessionId session
-  Just  registeredEmail <- getUser uId
-  liftIO $ print (session, uId, registeredEmail)
+  Just  userId          <- resolveSessionId session
+  Just  registeredEmail <- getUser userId
+  liftIO $ print (session, userId, registeredEmail)
   return ()
+ where
+  pollNotif email = do
+    result <- M.getNotificationsForEmail email
+    case result of
+      Nothing               -> pollNotif email
+      Just verificationCode -> return verificationCode
 
-type State = (PG.State, Redis.State, TVar M.State)
+type State = (PG.State, Redis.State, MQ.State, TVar M.State)
 
 newtype App a
   = App { unApp :: ReaderT State (KatipContextT IO) a }
@@ -79,6 +93,7 @@ newtype App a
     , MonadIO
     , MonadReader State
     , MonadThrow
+    , MonadCatch
     )
 
 run :: LogEnv -> State -> App a -> IO a
@@ -91,7 +106,9 @@ instance AuthRepo App where
   findEmailFromUserId = PG.findEmailFromUserId
 
 instance EmailVerificationNotif App where
-  notifyEmailVerification = M.notifyEmailVerification
+  -- In memory notification store
+  -- notifyEmailVerification = M.notifyEmailVerification
+  notifyEmailVerification = MQAuth.notifyEmailVerification
 
 instance SessionRepo App where
   -- In-memory session mngmt
