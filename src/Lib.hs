@@ -59,23 +59,24 @@ withKatip = bracket createLogEnv closeScribes
 
 action :: App ()
 action = do
-  rndEmailSuffix <- liftIO $ stringRandomIO "[a-z0-9]{4}"
-  let email =
-        either undefined id
-          .  mkEmail
-          $  "nieled."
-          <> rndEmailSuffix
-          <> "@riseup.net"
+  rndEmail <- liftIO $ stringRandomIO "[a-z0-9]{5}@test\\.com"
+  let email = either undefined id . mkEmail $ rndEmail
       passw = either undefined id $ mkPassword "iH8sn0w"
       auth  = Auth email passw
   register auth
-  Just vCode <- M.getNotificationsForEmail email
-  verifyEmail vCode
+  verificationCode <- pollNotif email
+  verifyEmail verificationCode
   Right session         <- login auth
-  Just  uId             <- resolveSessionId session
-  Just  registeredEmail <- getUser uId
-  liftIO $ print (session, uId, registeredEmail)
+  Just  userId          <- resolveSessionId session
+  Just  registeredEmail <- getUser userId
+  liftIO $ print (session, userId, registeredEmail)
   return ()
+ where
+  pollNotif email = do
+    result <- M.getNotificationsForEmail email
+    case result of
+      Nothing               -> pollNotif email
+      Just verificationCode -> return verificationCode
 
 type State = (PG.State, Redis.State, MQ.State, TVar M.State)
 
