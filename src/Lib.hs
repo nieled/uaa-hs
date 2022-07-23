@@ -84,6 +84,8 @@ withKatip = bracket createLogEnv closeScribes
     stdoutScribe <- mkHandleScribe ColorIfTerminal stdout (permitItem InfoS) V2
     registerScribe "stdout" stdoutScribe defaultScribeSettings =<< logEnv
 
+-- No longer being called in main as `runner action`
+-- Now scottyT blocks forever to handle any requests, so we no run test like this
 action :: App ()
 action = do
   rndEmail <- liftIO $ stringRandomIO "[a-z0-9]{5}@test\\.com"
