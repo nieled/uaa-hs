@@ -96,6 +96,6 @@ reqCurrentUserId = do
   case mUserId of
     Nothing -> do
       status status401
-      json ("AuthRequired" :: Text)
+      json ("Auth Required" :: Text)
       finish
     Just userId -> return userId

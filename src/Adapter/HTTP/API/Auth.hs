@@ -60,7 +60,7 @@ routes = do
     case domainResult of
       Left RegistrationErrorEmailTaken -> do
         status status400
-        json ("EmailTaken" :: Text)
+        json ("Email Taken" :: Text)
       Right _ -> return ()
   post "/api/auth/verifyEmail" $ do
     input        <- parseAndValidateJSON verifyEmailForm
@@ -68,7 +68,7 @@ routes = do
     case domainResult of
       Left EmailVerificationErrorInvalidCode -> do
         status status400
-        json ("InvalidCode" :: Text)
+        json ("Invalid Code" :: Text)
       Right _ -> return ()
   post "/api/auth/login" $ do
     input        <- parseAndValidateJSON authForm
@@ -76,10 +76,10 @@ routes = do
     case domainResult of
       Left LoginErrorInvalidAuth -> do
         status status400
-        json ("InvalidAuth" :: Text)
+        json ("Invalid Auth" :: Text)
       Left LoginErrorEmailNotVerified -> do
         status status400
-        json ("EmailNotVerified" :: Text)
+        json ("Email Not Verified" :: Text)
       Right sessionId -> do
         setSessionIdInCookie sessionId
         return ()

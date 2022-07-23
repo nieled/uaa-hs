@@ -56,4 +56,4 @@ routes = do
   defaultHandler $ \e -> do
     lift $ $(logTM) ErrorS $ "Unhandled error: " <> ls (showError e)
     status status500
-    json ("InternalServerError" :: Text)
+    json ("Internal Server Error" :: Text)
