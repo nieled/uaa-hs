@@ -13,6 +13,7 @@ module Domain.Auth
   , VerificationCode
   , SessionId
   , RegistrationError(..)
+  , EmailValidationErr(..)
   , EmailVerificationError(..)
   , LoginError(..)
 
