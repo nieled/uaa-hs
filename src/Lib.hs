@@ -68,7 +68,9 @@ withState action = withKatip $ \le -> do
  where
   -- TODO: parse from ENV variables
   mqCfg = "amqp://guest:guest@localhost:5672/%2F"
-  pgCfg = PG.Config { PG.configUrl = "postgresql://localhost/uaa"
+  pgCfg = PG.Config { PG.configDatabase             = "uaa"
+                    , PG.configUser                 = "uaa"
+                    , PG.configPassword             = "uaa"
                     , PG.configStripeCount          = 2
                     , PG.configMaxOpenConnPerStripe = 5
                     , PG.configIdleConnTimeout      = 10

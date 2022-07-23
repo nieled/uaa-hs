@@ -19,7 +19,8 @@ import           Data.Pool                      ( Pool
                                                 , withResource
                                                 )
 import           Data.Time                      ( NominalDiffTime )
-import           Database.PostgreSQL.Simple     ( Connection
+import           Database.PostgreSQL.Simple     ( ConnectInfo(..)
+                                                , Connection
                                                 , Only(Only)
                                                 , SqlError
                                                   ( SqlError
@@ -27,7 +28,9 @@ import           Database.PostgreSQL.Simple     ( Connection
                                                   , sqlState
                                                   )
                                                 , close
+                                                , connect
                                                 , connectPostgreSQL
+                                                , defaultConnectInfo
                                                 , query
                                                 , withTransaction
                                                 )
@@ -55,7 +58,9 @@ type PG r m = (Has State r, MonadReader r m, MonadIO m, MonadThrow m)
 
 -- TODO: add default config
 data Config = Config
-  { configUrl                  :: ByteString
+  { configDatabase             :: String
+  , configUser                 :: String
+  , configPassword             :: String
   , configStripeCount          :: Int
   , configMaxOpenConnPerStripe :: Int
   , configIdleConnTimeout      :: NominalDiffTime
@@ -77,7 +82,11 @@ withPool config = bracket initPool cleanPool
                         (configIdleConnTimeout config)
                         (configMaxOpenConnPerStripe config)
   cleanPool = destroyAllResources
-  openConn  = connectPostgreSQL (configUrl config)
+  openConn  = connect defaultConnectInfo
+    { connectDatabase = configDatabase config
+    , connectUser     = configUser config
+    , connectPassword = configPassword config
+    }
   closeConn = close
 
 withConn :: PG r m => (Connection -> IO a) -> m a
@@ -166,7 +175,7 @@ findEmailFromUserId userId = do
       Right email -> return $ Just email
       _ ->
         throwString
-          $  "Should not happen, email in DB is not vali: "
+          $  "Should not happen, email in DB is not valid: "
           <> show mail
     _ -> return Nothing
  where
