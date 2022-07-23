@@ -15,14 +15,18 @@ import           Domain.Auth                    ( Auth(Auth)
                                                 , AuthRepo
                                                 , EmailValidationErr
                                                 , EmailVerificationError
+                                                  ( EmailVerificationErrorInvalidCode
+                                                  )
                                                 , EmailVerificationNotif
                                                 , RegistrationError
                                                   ( RegistrationErrorEmailTaken
                                                   )
                                                 , SessionRepo
+                                                , VerificationCode
                                                 , mkEmail
                                                 , mkPassword
                                                 , register
+                                                , verifyEmail
                                                 )
 import           Katip                          ( KatipContext )
 import           Network.HTTP.Types             ( status400 )
@@ -55,8 +59,15 @@ routes = do
         status status400
         json ("EmailTaken" :: Text)
       Right _ -> return ()
-  post "/api/auth/verifyEmail" undefined
-  post "/api/auth/login"       undefined
+  post "/api/auth/verifyEmail" $ do
+    input        <- parseAndValidateJSON verifyEmailForm
+    domainResult <- lift $ verifyEmail input
+    case domainResult of
+      Left EmailVerificationErrorInvalidCode -> do
+        status status400
+        json ("InvalidCode" :: Text)
+      Right _ -> return ()
+  post "/api/auth/login" undefined
   get "/api/users" undefined
 
 -- TODO handle this using specific error types: Domain.Auth.EmailValidationErr Domain.Auth.PasswordValidationErr
@@ -67,3 +78,6 @@ authForm = Auth <$> "email" .: emailForm <*> "password" .: passwordForm
   passwordForm = DF.validate (toResult . asText . mkPassword) (DF.text Nothing)
   asText :: (Show e) => Either [e] d -> Either [Text] d
   asText = left (pack . show <$>)
+
+verifyEmailForm :: (Monad m) => DF.Form [Text] m VerificationCode
+verifyEmailForm = DF.text Nothing
