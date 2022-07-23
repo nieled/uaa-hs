@@ -27,6 +27,7 @@ library
   exposed-modules:
       Adapter.HTTP.API.Auth
       Adapter.HTTP.Common
+      Adapter.HTTP.Main
       Adapter.InMemory.Auth
       Adapter.PostgreSQL.Auth
       Adapter.RabbitMQ.Auth
