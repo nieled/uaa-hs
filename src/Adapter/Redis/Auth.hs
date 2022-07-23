@@ -8,7 +8,7 @@ import           Control.Monad.Reader           ( MonadIO(..)
                                                 , asks
                                                 )
 import           Data.ByteString.Char8          ( pack )
-import           Data.Has
+import           Data.Has                       ( Has(getter) )
 import           Data.Text                      ( unpack )
 import           Data.Text.Encoding             ( decodeUtf8
                                                 , encodeUtf8
@@ -16,7 +16,7 @@ import           Data.Text.Encoding             ( decodeUtf8
 import qualified Database.Redis                as R
 import qualified Domain.Auth                   as D
 import           Text.Read                      ( readMaybe )
-import           Text.StringRandom
+import           Text.StringRandom              ( stringRandomIO )
 
 type State = R.Connection
 

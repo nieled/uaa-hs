@@ -37,6 +37,7 @@ dependencies:
 - postgresql-simple
 - postgresql-migration
 - safe-exceptions
+- scotty
 - stm
 - string-random
 - template-haskell

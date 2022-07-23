@@ -34,6 +34,10 @@ import           Control.Monad.Except           ( ExceptT(ExceptT)
                                                 , MonadTrans(lift)
                                                 , runExceptT
                                                 )
+import           Data.Aeson                     ( defaultOptions )
+import           Data.Aeson.TH                  ( defaultOptions
+                                                , deriveJSON
+                                                )
 import           Data.Text                      ( Text
                                                 , unpack
                                                 )
@@ -49,8 +53,6 @@ import           Katip                          ( KatipContext
                                                 , sl
                                                 )
 import           Text.RawString.QQ              ( r )
-import           Data.Aeson
-import           Data.Aeson.TH
 
 newtype Email
   = Email { emailRaw :: Text }

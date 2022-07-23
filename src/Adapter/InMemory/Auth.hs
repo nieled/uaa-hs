@@ -1,6 +1,11 @@
 module Adapter.InMemory.Auth where
 
-import           Control.Concurrent.STM
+import           Control.Concurrent.STM         ( TVar
+                                                , atomically
+                                                , readTVar
+                                                , readTVarIO
+                                                , writeTVar
+                                                )
 import           Control.Monad.Except           ( MonadError
                                                 , MonadTrans(lift)
                                                 , runExceptT
@@ -18,7 +23,11 @@ import           Data.Containers                ( deleteMap
 import           Data.Foldable                  ( find )
 import           Data.Has                       ( Has(getter) )
 import           Data.Map                      as Map
+                                                ( Map
+                                                , lookup
+                                                )
 import           Data.Set                      as Set
+                                                ( Set )
 import           Data.Text                      ( pack )
 import qualified Domain.Auth                   as D
 import           Text.StringRandom              ( stringRandomIO )

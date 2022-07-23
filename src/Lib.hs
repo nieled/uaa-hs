@@ -21,10 +21,35 @@ import           Control.Monad.Reader           ( MonadIO(..)
 import           Debug.Trace                    ( trace
                                                 , traceId
                                                 )
-import           Domain.Auth
-import           Katip
+import           Domain.Auth                    ( Auth(Auth)
+                                                , AuthRepo(..)
+                                                , EmailVerificationNotif(..)
+                                                , SessionRepo(..)
+                                                , getUser
+                                                , login
+                                                , mkEmail
+                                                , mkPassword
+                                                , register
+                                                , resolveSessionId
+                                                , verifyEmail
+                                                )
+import           Katip                          ( ColorStrategy(ColorIfTerminal)
+                                                , Katip
+                                                , KatipContext
+                                                , KatipContextT
+                                                , LogEnv
+                                                , Severity(InfoS)
+                                                , Verbosity(V2)
+                                                , closeScribes
+                                                , defaultScribeSettings
+                                                , initLogEnv
+                                                , mkHandleScribe
+                                                , permitItem
+                                                , registerScribe
+                                                , runKatipContextT
+                                                )
 import           System.IO                      ( stdout )
-import           Text.StringRandom
+import           Text.StringRandom              ( stringRandomIO )
 
 main :: IO ()
 main = withState $ \le state@(_, _, mqState, _) -> do
@@ -80,8 +105,7 @@ action = do
 
 type State = (PG.State, Redis.State, MQ.State, TVar M.State)
 
-newtype App a
-  = App { unApp :: ReaderT State (KatipContextT IO) a }
+newtype App a = App {unApp :: ReaderT State (KatipContextT IO) a}
   -- = App { unApp :: KatipContextT (ReaderT State IO) a } -- same as above
   deriving
     ( Applicative

@@ -5,15 +5,44 @@ import           Control.Exception              ( bracket
                                                 )
 import           Control.Exception.Safe         ( throwString )
 import           Control.Monad.Catch            ( MonadThrow )
-import           Control.Monad.Reader
-import           Data.ByteString
-import           Data.Has
-import           Data.Pool
-import           Data.Time
-import           Database.PostgreSQL.Simple
+import           Control.Monad.Reader           ( MonadIO(..)
+                                                , MonadReader
+                                                , asks
+                                                )
+import           Data.ByteString                ( ByteString
+                                                , isInfixOf
+                                                )
+import           Data.Has                       ( Has(getter) )
+import           Data.Pool                      ( Pool
+                                                , createPool
+                                                , destroyAllResources
+                                                , withResource
+                                                )
+import           Data.Time                      ( NominalDiffTime )
+import           Database.PostgreSQL.Simple     ( Connection
+                                                , Only(Only)
+                                                , SqlError
+                                                  ( SqlError
+                                                  , sqlErrorMsg
+                                                  , sqlState
+                                                  )
+                                                , close
+                                                , connectPostgreSQL
+                                                , query
+                                                , withTransaction
+                                                )
 import           Database.PostgreSQL.Simple.Migration.V1Compat
+                                                ( MigrationCommand
+                                                  ( MigrationDirectory
+                                                  , MigrationInitialization
+                                                  )
+                                                , MigrationResult
+                                                  ( MigrationError
+                                                  )
+                                                , runMigrations
+                                                )
 import qualified Domain.Auth                   as D
-import           Text.StringRandom
+import           Text.StringRandom              ( stringRandomIO )
 
 type State = Pool Connection
 
