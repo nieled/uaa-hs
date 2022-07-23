@@ -27,7 +27,10 @@ import           Domain.Auth                    ( SessionId
                                                 , UserId
                                                 , resolveSessionId
                                                 )
-import           Network.HTTP.Types.Status      ( status401 )
+import           Network.HTTP.Types.Status      ( status400
+                                                , status401
+                                                )
+import           Text.Digestive                 ( View )
 import           Text.Digestive.Form           as DF
                                                 ( Form )
 import           Text.Digestive.Types          as DF
@@ -43,6 +46,8 @@ import           Web.Scotty.Trans               ( ActionT
                                                 , finish
                                                 , header
                                                 , json
+                                                , jsonData
+                                                , rescue
                                                 , setHeader
                                                 , status
                                                 )
@@ -51,7 +56,21 @@ import           Web.Scotty.Trans               ( ActionT
 -- with the corresponding error messages
 parseAndValidateJSON
   :: (ScottyError e, MonadIO m, ToJSON v) => DF.Form v m a -> ActionT e m a
-parseAndValidateJSON form = undefined
+parseAndValidateJSON form = do
+  val              <- jsonData `rescue` (\_ -> return Null)
+  validationResult <- lift $ validate form val
+  case validationResult of
+    (v, Nothing) -> do
+      status status400
+      json $ handleJSONErrors v
+      finish
+    (_, Just result) -> do
+      return result
+ where
+  validate :: (Monad m) => Form v m a -> Value -> m (View v, Maybe a)
+  validate = undefined
+  handleJSONErrors :: ToJSON a => View a -> Value
+  handleJSONErrors v = undefined
 
 toResult :: Either e a -> DF.Result e a
 toResult = either DF.Error DF.Success
