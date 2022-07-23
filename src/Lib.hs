@@ -2,6 +2,7 @@ module Lib
   ( main
   ) where
 
+import qualified Adapter.HTTP.Main             as HTTP
 import qualified Adapter.InMemory.Auth         as M
 import qualified Adapter.PostgreSQL.Auth       as PG
 import qualified Adapter.RabbitMQ.Auth         as MQAuth
@@ -52,18 +53,18 @@ import           System.IO                      ( stdout )
 import           Text.StringRandom              ( stringRandomIO )
 
 main :: IO ()
-main = withState $ \le state@(_, _, mqState, _) -> do
+main = withState $ \port le state@(_, _, mqState, _) -> do
   let runner = run le state
   MQAuth.init mqState runner
-  runner action
+  HTTP.main port runner
 
-withState :: (LogEnv -> State -> IO ()) -> IO ()
+withState :: (Int -> LogEnv -> State -> IO ()) -> IO ()
 withState action = withKatip $ \le -> do
   memoryState <- newTVarIO M.initialState
   PG.withState pgCfg $ \pgState -> Redis.withState redisCfg $ \redisState ->
     MQ.withState mqCfg 16 $ \mqState -> do
       let state = (pgState, redisState, mqState, memoryState)
-      action le state
+      action port le state
  where
   -- TODO: parse from ENV variables
   mqCfg = "amqp://guest:guest@localhost:5672/%2F"
@@ -72,6 +73,7 @@ withState action = withKatip $ \le -> do
                     , PG.configMaxOpenConnPerStripe = 5
                     , PG.configIdleConnTimeout      = 10
                     }
+  port     = 3000
   redisCfg = "redis://localhost:6379/0"
 
 withKatip :: (LogEnv -> IO a) -> IO a
