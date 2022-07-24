@@ -5,15 +5,47 @@ import           Control.Exception              ( bracket
                                                 )
 import           Control.Exception.Safe         ( throwString )
 import           Control.Monad.Catch            ( MonadThrow )
-import           Control.Monad.Reader
-import           Data.ByteString
-import           Data.Has
-import           Data.Pool
-import           Data.Time
-import           Database.PostgreSQL.Simple
+import           Control.Monad.Reader           ( MonadIO(..)
+                                                , MonadReader
+                                                , asks
+                                                )
+import           Data.ByteString                ( ByteString
+                                                , isInfixOf
+                                                )
+import           Data.Has                       ( Has(getter) )
+import           Data.Pool                      ( Pool
+                                                , createPool
+                                                , destroyAllResources
+                                                , withResource
+                                                )
+import           Data.Time                      ( NominalDiffTime )
+import           Database.PostgreSQL.Simple     ( ConnectInfo(..)
+                                                , Connection
+                                                , Only(Only)
+                                                , SqlError
+                                                  ( SqlError
+                                                  , sqlErrorMsg
+                                                  , sqlState
+                                                  )
+                                                , close
+                                                , connect
+                                                , connectPostgreSQL
+                                                , defaultConnectInfo
+                                                , query
+                                                , withTransaction
+                                                )
 import           Database.PostgreSQL.Simple.Migration.V1Compat
+                                                ( MigrationCommand
+                                                  ( MigrationDirectory
+                                                  , MigrationInitialization
+                                                  )
+                                                , MigrationResult
+                                                  ( MigrationError
+                                                  )
+                                                , runMigrations
+                                                )
 import qualified Domain.Auth                   as D
-import           Text.StringRandom
+import           Text.StringRandom              ( stringRandomIO )
 
 type State = Pool Connection
 
@@ -26,7 +58,9 @@ type PG r m = (Has State r, MonadReader r m, MonadIO m, MonadThrow m)
 
 -- TODO: add default config
 data Config = Config
-  { configUrl                  :: ByteString
+  { configDatabase             :: String
+  , configUser                 :: String
+  , configPassword             :: String
   , configStripeCount          :: Int
   , configMaxOpenConnPerStripe :: Int
   , configIdleConnTimeout      :: NominalDiffTime
@@ -48,7 +82,11 @@ withPool config = bracket initPool cleanPool
                         (configIdleConnTimeout config)
                         (configMaxOpenConnPerStripe config)
   cleanPool = destroyAllResources
-  openConn  = connectPostgreSQL (configUrl config)
+  openConn  = connect defaultConnectInfo
+    { connectDatabase = configDatabase config
+    , connectUser     = configUser config
+    , connectPassword = configPassword config
+    }
   closeConn = close
 
 withConn :: PG r m => (Connection -> IO a) -> m a
@@ -137,7 +175,7 @@ findEmailFromUserId userId = do
       Right email -> return $ Just email
       _ ->
         throwString
-          $  "Should not happen, email in DB is not vali: "
+          $  "Should not happen, email in DB is not valid: "
           <> show mail
     _ -> return Nothing
  where
