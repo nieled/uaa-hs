@@ -67,8 +67,10 @@ parseAndValidateJSON form = do
     (_, Just result) -> do
       return result
  where
+  -- | Given a JSON document and a form, attempt to use the JSON document to evaluation the form. If the form fails validation, then 'Nothing' is returned.
   validate :: (Monad m) => Form v m a -> Value -> m (View v, Maybe a)
-  validate = undefined
+  validate form json = undefined
+  -- | Takes a 'View' and displays any errors in a hierachical format that matches the expected input.
   handleJSONErrors :: ToJSON a => View a -> Value
   handleJSONErrors v = undefined
 
