@@ -1,39 +1,38 @@
-module Adapter.HTTP.Main where
+module Adapter.HTTP.API.Main where
 
-import qualified Adapter.HTTP.API.Auth         as AuthAPI
-import qualified Adapter.HTTP.API.Main         as API
-import qualified Adapter.HTTP.Web.Main         as Web
+import qualified Adapter.HTTP.API.Auth         as Auth
+import           Adapter.HTTP.API.Common        ( errorResponse )
 import           Control.Monad.Reader           ( MonadIO
                                                 , MonadTrans(..)
                                                 )
-import           Data.MonoTraversable           ( headMay )
 import           Data.Text.Lazy                 ( Text )
 import           Domain.Auth                    ( AuthRepo
                                                 , EmailVerificationNotif
                                                 , SessionRepo
                                                 )
 import           Katip                          ( KatipContext
-                                                , Severity(..)
+                                                , Severity(ErrorS)
                                                 , logTM
                                                 , ls
                                                 )
-import           Network.HTTP.Types             ( status500 )
-import           Network.Wai                    ( Request(pathInfo)
+import           Network.HTTP.Types.Status      ( status404
+                                                , status500
+                                                )
+import           Network.Wai                    ( Application
                                                 , Response
                                                 )
-import           Network.Wai.Handler.Warp       ( run )
 import           Network.Wai.Middleware.Gzip    ( GzipFiles(GzipCompress)
                                                 , GzipSettings(gzipFiles)
                                                 , def
                                                 , gzip
                                                 )
-import           Network.Wai.Middleware.Vhost   ( vhost )
 import           Web.Scotty.Trans               ( ScottyError(showError)
                                                 , ScottyT
                                                 , defaultHandler
                                                 , json
                                                 , middleware
-                                                , scottyT
+                                                , notFound
+                                                , scottyAppT
                                                 , status
                                                 )
 
@@ -44,11 +43,28 @@ main
      , EmailVerificationNotif m
      , SessionRepo m
      )
-  => Int
-  -> (m Response -> IO Response)
-  -> IO ()
-main port runner = do
-  web <- Web.main runner
-  api <- API.main runner
-  run port $ vhost [(pathBeginsWith "api", api)] web
-  where pathBeginsWith path req = headMay (pathInfo req) == Just path
+  => (m Response -> IO Response)
+  -> IO Application
+main runner = scottyAppT runner routes
+
+routes
+  :: ( MonadIO m
+     , KatipContext m
+     , AuthRepo m
+     , EmailVerificationNotif m
+     , SessionRepo m
+     )
+  => ScottyT Text m ()
+routes = do
+  middleware $ gzip $ def { gzipFiles = GzipCompress }
+
+  Auth.routes
+
+  notFound $ do
+    status status404
+    json $ errorResponse ("NotFound" :: Text)
+
+  defaultHandler $ \e -> do
+    lift $ $(logTM) ErrorS $ "Unhandled error: " <> ls (showError e)
+    status status500
+    json $ errorResponse ("InternalServerError" :: Text)
