@@ -26,8 +26,11 @@ source-repository head
 library
   exposed-modules:
       Adapter.HTTP.API.Auth
+      Adapter.HTTP.API.Common
+      Adapter.HTTP.API.Main
       Adapter.HTTP.Common
       Adapter.HTTP.Main
+      Adapter.HTTP.Web.Main
       Adapter.InMemory.Auth
       Adapter.PostgreSQL.Auth
       Adapter.RabbitMQ.Auth
@@ -78,6 +81,7 @@ library
     , time-lens
     , wai
     , wai-extra
+    , warp
   default-language: Haskell2010
 
 executable uaa-hs-exe
@@ -126,6 +130,7 @@ executable uaa-hs-exe
     , uaa-hs
     , wai
     , wai-extra
+    , warp
   default-language: Haskell2010
 
 test-suite uaa-hs-test
@@ -175,4 +180,5 @@ test-suite uaa-hs-test
     , uaa-hs
     , wai
     , wai-extra
+    , warp
   default-language: Haskell2010

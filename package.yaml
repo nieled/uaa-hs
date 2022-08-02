@@ -50,6 +50,7 @@ dependencies:
 - time-lens
 - wai
 - wai-extra
+- warp
 
 default-extensions:
 - ConstraintKinds
