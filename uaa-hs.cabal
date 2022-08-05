@@ -30,6 +30,7 @@ library
       Adapter.HTTP.API.Main
       Adapter.HTTP.Common
       Adapter.HTTP.Main
+      Adapter.HTTP.Web.Auth
       Adapter.HTTP.Web.Common
       Adapter.HTTP.Web.Main
       Adapter.InMemory.Auth
