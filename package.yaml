@@ -24,6 +24,7 @@ dependencies:
 - aeson
 - amqp
 - blaze-builder
+- blaze-html
 - bytestring
 - containers
 - cookie

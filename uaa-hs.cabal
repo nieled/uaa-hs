@@ -30,6 +30,7 @@ library
       Adapter.HTTP.API.Main
       Adapter.HTTP.Common
       Adapter.HTTP.Main
+      Adapter.HTTP.Web.Common
       Adapter.HTTP.Web.Main
       Adapter.InMemory.Auth
       Adapter.PostgreSQL.Auth
@@ -55,6 +56,7 @@ library
     , amqp
     , base >=4.7 && <5
     , blaze-builder
+    , blaze-html
     , bytestring
     , containers
     , cookie
@@ -103,6 +105,7 @@ executable uaa-hs-exe
     , amqp
     , base >=4.7 && <5
     , blaze-builder
+    , blaze-html
     , bytestring
     , containers
     , cookie
@@ -153,6 +156,7 @@ test-suite uaa-hs-test
     , amqp
     , base >=4.7 && <5
     , blaze-builder
+    , blaze-html
     , bytestring
     , containers
     , cookie
