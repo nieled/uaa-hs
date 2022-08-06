@@ -69,7 +69,8 @@ routes
   -> ScottyT Text m ()
 routes cachingStrategy = do
   middleware $ gzip $ def { gzipFiles = GzipCompress }
-  middleware $ staticPolicy' cachingStrategy (addBase "src/Adapter/HTTP/Web")
+  middleware
+    $ staticPolicy' cachingStrategy (addBase "src/Adapter/HTTP/Web/static")
 
   Auth.routes
 
