@@ -30,6 +30,7 @@ dependencies:
 - cookie
 - data-has
 - digestive-functors
+- digestive-functors-blaze
 - digestive-functors-scotty
 - exceptions
 - hedis

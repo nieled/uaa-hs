@@ -42,6 +42,7 @@ packages:
 #
 extra-deps:
 - digestive-functors-0.8.4.2
+- digestive-functors-blaze-0.6.2.0
 - git: https://github.com/mmartin/digestive-functors-scotty.git
   commit: aca9dd5c3df6c64c24b80357051e3ba7ca974b60
 

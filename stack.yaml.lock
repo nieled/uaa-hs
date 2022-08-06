@@ -12,6 +12,13 @@ packages:
   original:
     hackage: digestive-functors-0.8.4.2
 - completed:
+    hackage: digestive-functors-blaze-0.6.2.0@sha256:3aae259265b8517fb7efe2a7681d846e01f52c22f49f193aff550a1630f182d0,841
+    pantry-tree:
+      size: 289
+      sha256: 2584d35cf054e3daa2f961d7b68e1c0bafd68f99284c4e76509fc455a0380315
+  original:
+    hackage: digestive-functors-blaze-0.6.2.0
+- completed:
     name: digestive-functors-scotty
     version: 0.2.0.2
     git: https://github.com/mmartin/digestive-functors-scotty.git

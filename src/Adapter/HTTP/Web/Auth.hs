@@ -9,12 +9,29 @@ import           Control.Monad.Reader           ( MonadIO
 import           Data.Text                      ( Text
                                                 , pack
                                                 )
-import           Domain.Auth
+import           Domain.Auth                    ( Auth(Auth)
+                                                , AuthRepo
+                                                , EmailVerificationError
+                                                  ( EmailVerificationErrorInvalidCode
+                                                  )
+                                                , EmailVerificationNotif
+                                                , RegistrationError
+                                                  ( RegistrationErrorEmailTaken
+                                                  )
+                                                , SessionRepo
+                                                , getUser
+                                                , mkEmail
+                                                , mkPassword
+                                                , rawEmail
+                                                , register
+                                                , verifyEmail
+                                                )
 import           Katip
 import qualified Text.Blaze.Html5              as H
 import           Text.Blaze.Html5               ( (!) )
 import qualified Text.Blaze.Html5.Attributes   as A
 import qualified Text.Digestive                as DF
+import           Text.Digestive.Blaze.Html5    as DH
 import           Text.Digestive.Form            ( (.:) )
 import           Text.Digestive.Scotty
 import           Web.Scotty.Trans
@@ -77,9 +94,6 @@ verifyEmailPage message = mainLayout "Email verification" $ do
   H.div $ H.toHtml message
   H.div $ H.a ! A.href "/auth/login" $ "Login"
 
-registerPage :: DF.View [Text] -> [Text] -> H.Html
-registerPage = undefined
-
 authForm :: (Monad m) => DF.Form [Text] m Auth
 authForm = Auth <$> "email" .: emailForm <*> "password" .: passwordForm
  where
@@ -87,3 +101,26 @@ authForm = Auth <$> "email" .: emailForm <*> "password" .: passwordForm
   passwordForm = DF.validate (toResult . asText . mkPassword) (DF.text Nothing)
   asText :: (Show e) => Either [e] d -> Either [Text] d
   asText = left (pack . show <$>)
+
+authFormLayout :: DF.View [Text] -> Text -> Text -> [Text] -> H.Html
+authFormLayout view formTitle action msgs = formLayout view action $ do
+  H.h2 $ H.toHtml formTitle
+  H.div $ errorList msgs
+  H.div $ do
+    H.label "Email"
+    DH.inputText "email" view
+    H.div $ errorList' "email"
+  H.div $ do
+    H.label "Password"
+    DH.inputPassword "password" view
+    H.div $ errorList' "password"
+  H.input ! A.type_ "submit" ! A.value "Submit"
+ where
+  errorList' path = errorList . mconcat $ DF.errors path view
+  errorList msgs = H.ul $ do
+    H.li . H.toHtml . show $ msgs -- TODO: create a `H.li` for each error
+  errorItem :: Text -> H.Html
+  errorItem = H.li . H.toHtml
+
+registerPage :: DF.View [Text] -> [Text] -> H.Html
+registerPage = undefined
