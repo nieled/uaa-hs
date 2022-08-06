@@ -11,6 +11,17 @@ packages:
       sha256: 53ce82c7f0c60c10009b1b764b537117a4ab402bbe1a147fba5ad2263acb3025
   original:
     hackage: digestive-functors-0.8.4.2
+- completed:
+    name: digestive-functors-scotty
+    version: 0.2.0.2
+    git: https://github.com/mmartin/digestive-functors-scotty.git
+    pantry-tree:
+      size: 287
+      sha256: 77635a1be4e267c576791ed305d89f44d7077826383dc8f66b04c50ac5c3da81
+    commit: aca9dd5c3df6c64c24b80357051e3ba7ca974b60
+  original:
+    git: https://github.com/mmartin/digestive-functors-scotty.git
+    commit: aca9dd5c3df6c64c24b80357051e3ba7ca974b60
 snapshots:
 - completed:
     size: 618951

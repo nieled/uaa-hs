@@ -63,6 +63,7 @@ library
     , cookie
     , data-has
     , digestive-functors
+    , digestive-functors-scotty
     , exceptions
     , hedis
     , http-types
@@ -112,6 +113,7 @@ executable uaa-hs-exe
     , cookie
     , data-has
     , digestive-functors
+    , digestive-functors-scotty
     , exceptions
     , hedis
     , http-types
@@ -163,6 +165,7 @@ test-suite uaa-hs-test
     , cookie
     , data-has
     , digestive-functors
+    , digestive-functors-scotty
     , exceptions
     , hedis
     , http-types

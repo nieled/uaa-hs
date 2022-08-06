@@ -1,17 +1,22 @@
 module Adapter.HTTP.Web.Auth where
 
-import           Adapter.HTTP.API.Auth          ( authForm )
+import           Adapter.HTTP.Common
 import           Adapter.HTTP.Web.Common
+import           Control.Arrow                  ( left )
 import           Control.Monad.Reader           ( MonadIO
                                                 , lift
                                                 )
-import           Data.Text                      ( Text )
+import           Data.Text                      ( Text
+                                                , pack
+                                                )
 import           Domain.Auth
 import           Katip
 import qualified Text.Blaze.Html5              as H
 import           Text.Blaze.Html5               ( (!) )
 import qualified Text.Blaze.Html5.Attributes   as A
 import qualified Text.Digestive                as DF
+import           Text.Digestive.Form            ( (.:) )
+import           Text.Digestive.Scotty
 import           Web.Scotty.Trans
 
 
@@ -31,7 +36,7 @@ routes = do
     view <- DF.getForm "auth" authForm
     renderHtml $ registerPage view []
   post "/auth/register" $ do
-    (view, mAuth) <- _ "auth" authForm
+    (view, mAuth) <- runForm "auth" authForm
     case mAuth of
       Nothing   -> renderHtml $ registerPage view []
       Just auth -> do
@@ -55,7 +60,7 @@ routes = do
   post "/auth/login" $ undefined
 
   get "/users" $ do
-    userId <- reqCurrentUserId
+    userId <- Adapter.HTTP.Web.Common.reqCurrentUserId -- TODO
     mEmail <- lift $ getUser userId
     case mEmail of
       Nothing    -> raise $ stringError "Should not happen: email is not found"
@@ -74,3 +79,11 @@ verifyEmailPage message = mainLayout "Email verification" $ do
 
 registerPage :: DF.View [Text] -> [Text] -> H.Html
 registerPage = undefined
+
+authForm :: (Monad m) => DF.Form [Text] m Auth
+authForm = Auth <$> "email" .: emailForm <*> "password" .: passwordForm
+ where
+  emailForm    = DF.validate (toResult . asText . mkEmail) (DF.text Nothing)
+  passwordForm = DF.validate (toResult . asText . mkPassword) (DF.text Nothing)
+  asText :: (Show e) => Either [e] d -> Either [Text] d
+  asText = left (pack . show <$>)
