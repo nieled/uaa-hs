@@ -1,7 +1,13 @@
 module Adapter.HTTP.Web.Auth where
 
-import           Adapter.HTTP.Common
-import           Adapter.HTTP.Web.Common
+import           Adapter.HTTP.Common            ( setSessionIdInCookie
+                                                , toResult
+                                                )
+import           Adapter.HTTP.Web.Common        ( formLayout
+                                                , mainLayout
+                                                , renderHtml
+                                                , reqCurrentUserId
+                                                )
 import           Control.Arrow                  ( left )
 import           Control.Monad.Reader           ( MonadIO
                                                 , lift
@@ -15,26 +21,39 @@ import           Domain.Auth                    ( Auth(Auth)
                                                   ( EmailVerificationErrorInvalidCode
                                                   )
                                                 , EmailVerificationNotif
+                                                , LoginError(..)
                                                 , RegistrationError
                                                   ( RegistrationErrorEmailTaken
                                                   )
                                                 , SessionRepo
                                                 , getUser
+                                                , login
                                                 , mkEmail
                                                 , mkPassword
                                                 , rawEmail
                                                 , register
                                                 , verifyEmail
                                                 )
-import           Katip
+import           Katip                          ( KatipContext )
 import qualified Text.Blaze.Html5              as H
 import           Text.Blaze.Html5               ( (!) )
 import qualified Text.Blaze.Html5.Attributes   as A
 import qualified Text.Digestive                as DF
 import           Text.Digestive.Blaze.Html5    as DH
+                                                ( inputPassword
+                                                , inputText
+                                                )
 import           Text.Digestive.Form            ( (.:) )
-import           Text.Digestive.Scotty
-import           Web.Scotty.Trans
+import           Text.Digestive.Scotty          ( runForm )
+import           Web.Scotty.Trans               ( ScottyError(stringError)
+                                                , ScottyT
+                                                , get
+                                                , param
+                                                , post
+                                                , raise
+                                                , redirect
+                                                , rescue
+                                                )
 
 
 routes
@@ -73,8 +92,23 @@ routes = do
         renderHtml $ verifyEmailPage "The verification code is invalid"
       Right _ -> renderHtml $ verifyEmailPage "Your email has been verified"
 
-  get "/auth/login" $ undefined
-  post "/auth/login" $ undefined
+  get "/auth/login" $ do
+    view <- DF.getForm "auth" authForm
+    renderHtml $ loginPage view []
+  post "/auth/login" $ do
+    (view, mAuth) <- runForm "auth" authForm
+    case mAuth of
+      Nothing   -> renderHtml $ loginPage view []
+      Just auth -> do
+        result <- lift $ login auth
+        case result of
+          Left LoginErrorEmailNotVerified ->
+            renderHtml $ loginPage view ["Email has not been verified"]
+          Left LoginErrorInvalidAuth ->
+            renderHtml $ loginPage view ["Email or password is incorrect"]
+          Right sessionId -> do
+            setSessionIdInCookie sessionId
+            redirect "/"
 
   get "/users" $ do
     userId <- Adapter.HTTP.Web.Common.reqCurrentUserId -- TODO
@@ -127,3 +161,8 @@ registerPage :: DF.View [Text] -> [Text] -> H.Html
 registerPage view msgs = mainLayout "Register" $ do
   H.div $ authFormLayout view "Register" "/auth/register" msgs
   H.div $ H.a ! A.href "/auth/login" $ "Login"
+
+loginPage :: DF.View [Text] -> [Text] -> H.Html
+loginPage view msgs = mainLayout "Login" $ do
+  H.div $ authFormLayout view "Login" "/auth/login" msgs
+  H.div $ H.a ! A.href "/auth/register" $ "Register"
