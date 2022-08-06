@@ -53,6 +53,7 @@ dependencies:
 - time-lens
 - wai
 - wai-extra
+- wai-middleware-static
 - warp
 
 default-extensions:

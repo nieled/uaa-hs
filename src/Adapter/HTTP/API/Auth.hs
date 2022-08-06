@@ -1,8 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Adapter.HTTP.API.Auth where
 
+import           Adapter.HTTP.API.Common        ( reqCurrentUserId )
 import           Adapter.HTTP.Common            ( parseAndValidateJSON
-                                                , reqCurrentUserId
                                                 , setSessionIdInCookie
                                                 , toResult
                                                 )

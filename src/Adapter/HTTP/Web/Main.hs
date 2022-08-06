@@ -1,5 +1,6 @@
 module Adapter.HTTP.Web.Main where
 
+import qualified Adapter.HTTP.Web.Auth         as Auth
 import           Control.Monad.Reader           ( MonadIO
                                                 , MonadTrans(..)
                                                 )
@@ -20,10 +21,25 @@ import           Network.Wai                    ( Application
                                                 , Request(pathInfo)
                                                 , Response
                                                 )
+import           Network.Wai.Middleware.Gzip    ( GzipFiles(GzipCompress)
+                                                , GzipSettings(gzipFiles)
+                                                , def
+                                                , gzip
+                                                )
+import           Network.Wai.Middleware.Static  ( CacheContainer
+                                                , CachingStrategy
+                                                  ( PublicStaticCaching
+                                                  )
+                                                , Options(cacheContainer)
+                                                , addBase
+                                                , initCaching
+                                                , staticPolicy'
+                                                )
 import           Web.Scotty.Trans               ( ScottyError(..)
                                                 , ScottyT
                                                 , defaultHandler
                                                 , get
+                                                , middleware
                                                 , notFound
                                                 , scottyAppT
                                                 , status
@@ -38,7 +54,9 @@ main
      )
   => (m Response -> IO Response)
   -> IO Application
-main runner = scottyAppT runner routes
+main runner = do
+  cacheContainer <- initCaching PublicStaticCaching
+  scottyAppT runner $ routes cacheContainer
 
 routes
   :: ( MonadIO m
@@ -47,9 +65,13 @@ routes
      , EmailVerificationNotif m
      , SessionRepo m
      )
-  => ScottyT Text m ()
-routes = do
-  get "/" $ text "Hello from web!"
+  => CacheContainer
+  -> ScottyT Text m ()
+routes cachingStrategy = do
+  middleware $ gzip $ def { gzipFiles = GzipCompress }
+  middleware $ staticPolicy' cachingStrategy (addBase "src/Adapter/HTTP/Web")
+
+  Auth.routes
 
   notFound $ do
     status status404

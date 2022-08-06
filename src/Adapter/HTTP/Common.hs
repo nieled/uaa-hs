@@ -110,13 +110,3 @@ getCurrentUserId = do
   case mSessionId of
     Nothing        -> return Nothing
     Just sessionId -> lift $ resolveSessionId sessionId
-
-reqCurrentUserId :: (SessionRepo m, ScottyError e) => ActionT e m UserId
-reqCurrentUserId = do
-  mUserId <- getCurrentUserId
-  case mUserId of
-    Nothing -> do
-      status status401
-      json ("Auth Required" :: Text)
-      finish
-    Just userId -> return userId
