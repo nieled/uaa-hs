@@ -102,6 +102,7 @@ authForm = Auth <$> "email" .: emailForm <*> "password" .: passwordForm
   asText :: (Show e) => Either [e] d -> Either [Text] d
   asText = left (pack . show <$>)
 
+-- | Captures user registration info
 authFormLayout :: DF.View [Text] -> Text -> Text -> [Text] -> H.Html
 authFormLayout view formTitle action msgs = formLayout view action $ do
   H.h2 $ H.toHtml formTitle
@@ -123,4 +124,6 @@ authFormLayout view formTitle action msgs = formLayout view action $ do
   errorItem = H.li . H.toHtml
 
 registerPage :: DF.View [Text] -> [Text] -> H.Html
-registerPage = undefined
+registerPage view msgs = mainLayout "Register" $ do
+  H.div $ authFormLayout view "Register" "/auth/register" msgs
+  H.div $ H.a ! A.href "/auth/login" $ "Login"
