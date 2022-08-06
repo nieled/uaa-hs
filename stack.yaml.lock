@@ -3,7 +3,32 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    hackage: digestive-functors-0.8.4.2@sha256:badff1797b6dcd860a48ed4558985b2f6bec501e1016fa5afd9d7d6b0d8e4c08,3364
+    pantry-tree:
+      size: 1682
+      sha256: 53ce82c7f0c60c10009b1b764b537117a4ab402bbe1a147fba5ad2263acb3025
+  original:
+    hackage: digestive-functors-0.8.4.2
+- completed:
+    hackage: digestive-functors-blaze-0.6.2.0@sha256:3aae259265b8517fb7efe2a7681d846e01f52c22f49f193aff550a1630f182d0,841
+    pantry-tree:
+      size: 289
+      sha256: 2584d35cf054e3daa2f961d7b68e1c0bafd68f99284c4e76509fc455a0380315
+  original:
+    hackage: digestive-functors-blaze-0.6.2.0
+- completed:
+    name: digestive-functors-scotty
+    version: 0.2.0.2
+    git: https://github.com/mmartin/digestive-functors-scotty.git
+    pantry-tree:
+      size: 287
+      sha256: 77635a1be4e267c576791ed305d89f44d7077826383dc8f66b04c50ac5c3da81
+    commit: aca9dd5c3df6c64c24b80357051e3ba7ca974b60
+  original:
+    git: https://github.com/mmartin/digestive-functors-scotty.git
+    commit: aca9dd5c3df6c64c24b80357051e3ba7ca974b60
 snapshots:
 - completed:
     size: 618951

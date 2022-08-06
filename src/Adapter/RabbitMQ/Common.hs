@@ -11,11 +11,44 @@ import           Control.Monad.Reader           ( MonadIO(..)
                                                 , asks
                                                 , void
                                                 )
-import           Data.Aeson
-import           Data.Has
+import           Data.Aeson                     ( FromJSON
+                                                , ToJSON
+                                                , eitherDecode'
+                                                , encode
+                                                )
+import           Data.Has                       ( Has(getter) )
 import           Data.Text                      ( Text )
-import           Katip
-import           Network.AMQP
+import           Katip                          ( KatipContext
+                                                , Severity(ErrorS)
+                                                , katipAddContext
+                                                , logTM
+                                                , sl
+                                                )
+import           Network.AMQP                   ( Ack(Ack)
+                                                , Channel
+                                                , ExchangeOpts
+                                                  ( exchangeName
+                                                  , exchangeType
+                                                  )
+                                                , Message(msgBody)
+                                                , QueueOpts(queueName)
+                                                , ackEnv
+                                                , bindQueue
+                                                , closeConnection
+                                                , confirmSelect
+                                                , consumeMsgs
+                                                , declareExchange
+                                                , declareQueue
+                                                , fromURI
+                                                , newExchange
+                                                , newMsg
+                                                , newQueue
+                                                , openChannel
+                                                , openConnection''
+                                                , publishMsg
+                                                , qos
+                                                , rejectEnv
+                                                )
 
 data State = State
   { statePublisherChannel :: Channel

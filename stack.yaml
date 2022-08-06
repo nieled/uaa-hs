@@ -40,7 +40,11 @@ packages:
 # - git: https://github.com/commercialhaskell/stack.git
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 #
-# extra-deps: []
+extra-deps:
+- digestive-functors-0.8.4.2
+- digestive-functors-blaze-0.6.2.0
+- git: https://github.com/mmartin/digestive-functors-scotty.git
+  commit: aca9dd5c3df6c64c24b80357051e3ba7ca974b60
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
@@ -49,7 +53,7 @@ packages:
 # extra-package-dbs: []
 
 # Control whether we use the GHC we find on the path
-# system-ghc: true
+system-ghc: true
 #
 # Require a specific version of stack, using version ranges
 # require-stack-version: -any # Default

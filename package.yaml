@@ -23,11 +23,18 @@ dependencies:
 - base >= 4.7 && < 5
 - aeson
 - amqp
+- blaze-builder
+- blaze-html
 - bytestring
 - containers
+- cookie
 - data-has
+- digestive-functors
+- digestive-functors-blaze
+- digestive-functors-scotty
 - exceptions
 - hedis
+- http-types
 - katip
 - mono-traversable
 - mtl
@@ -37,12 +44,17 @@ dependencies:
 - postgresql-simple
 - postgresql-migration
 - safe-exceptions
+- scotty
 - stm
 - string-random
 - template-haskell
 - text
 - time
 - time-lens
+- wai
+- wai-extra
+- wai-middleware-static
+- warp
 
 default-extensions:
 - ConstraintKinds

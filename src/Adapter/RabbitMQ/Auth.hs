@@ -1,17 +1,29 @@
 module Adapter.RabbitMQ.Auth where
 
 import qualified Adapter.InMemory.Auth         as M
-import           Adapter.RabbitMQ.Common
+import           Adapter.RabbitMQ.Common        ( Rabbit
+                                                , State
+                                                , consumeAndProcess
+                                                , initConsumer
+                                                , initQueue
+                                                , publish
+                                                , withMsgAndErr
+                                                )
 import           Control.Exception.Safe         ( MonadCatch )
-import           Data.Aeson
-import           Data.Aeson.TH
+import           Data.Aeson                     ( Options(fieldLabelModifier)
+                                                , defaultOptions
+                                                )
+import           Data.Aeson.TH                  ( deriveJSON )
 import           Data.Char                      ( isUpper
                                                 , toLower
                                                 )
 import           Data.Text                      ( Text )
 import qualified Domain.Auth                   as D
-import           Katip
-import           Network.AMQP
+import           Katip                          ( KatipContext
+                                                , Severity(ErrorS)
+                                                , logTM
+                                                )
+import           Network.AMQP                   ( Message )
 
 -- TODO: It stores the message in an in-memory database for now
 -- Implement email sender adapter

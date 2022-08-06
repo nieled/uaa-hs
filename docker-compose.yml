@@ -3,14 +3,17 @@ services:
     image: redis:alpine
     ports:
       - 6379:6379
-  
+
   rabbitmq:
     image: rabbitmq:alpine
-    ports: 
+    ports:
       - 5672:5672
+
   db:
     image: postgres
+    ports:
+      - 5432:5432
     environment:
       - POSTGRES_DB=uaa
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=
+      - POSTGRES_USER=uaa
+      - POSTGRES_PASSWORD=uaa

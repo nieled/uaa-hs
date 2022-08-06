@@ -5,14 +5,17 @@ module Domain.Auth
     Auth(..)
   , Email
   , mkEmail
+  , mkEmail'
   , rawEmail
   , Password
   , mkPassword
+  , mkPassword'
   , rawPassword
   , UserId
   , VerificationCode
   , SessionId
   , RegistrationError(..)
+  , EmailValidationErr(..)
   , EmailVerificationError(..)
   , LoginError(..)
 
@@ -34,6 +37,10 @@ import           Control.Monad.Except           ( ExceptT(ExceptT)
                                                 , MonadTrans(lift)
                                                 , runExceptT
                                                 )
+import           Data.Aeson                     ( defaultOptions )
+import           Data.Aeson.TH                  ( defaultOptions
+                                                , deriveJSON
+                                                )
 import           Data.Text                      ( Text
                                                 , unpack
                                                 )
@@ -49,8 +56,6 @@ import           Katip                          ( KatipContext
                                                 , sl
                                                 )
 import           Text.RawString.QQ              ( r )
-import           Data.Aeson
-import           Data.Aeson.TH
 
 newtype Email
   = Email { emailRaw :: Text }
@@ -62,6 +67,12 @@ mkEmail = validate Email
   [ regexMatches
       [r|^[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,64}$|]
       EmailValidationErrInvalidEmail
+  ]
+mkEmail' :: Text -> Either [Text] Email
+mkEmail' = validate Email
+  [ regexMatches
+      [r|^[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,64}$|]
+      "EmailValidationErrInvalidEmail"
   ]
 
 newtype Password
@@ -75,6 +86,13 @@ mkPassword = validate Password
   , regexMatches [r|[A-Z]|] PasswordValidationErrMustContainUpperCase
   , regexMatches [r|[a-z]|] PasswordValidationErrMustContainLowerCase
   , lengthBetween 5 50 PasswordValidationErrLength
+  ]
+mkPassword' :: Text -> Either [Text] Password
+mkPassword' = validate Password
+  [ regexMatches [r|[0-9]|] "PasswordValidationErrMustContainNumber"
+  , regexMatches [r|[A-Z]|] "PasswordValidationErrMustContainUpperCase"
+  , regexMatches [r|[a-z]|] "PasswordValidationErrMustContainLowerCase"
+  , lengthBetween 5 50 "PasswordValidationErrLength"
   ]
 
 type VerificationCode = Text

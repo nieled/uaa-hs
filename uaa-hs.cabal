@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.7.
+-- This file has been generated from package.yaml by hpack version 0.34.4.
 --
 -- see: https://github.com/sol/hpack
 
@@ -25,6 +25,14 @@ source-repository head
 
 library
   exposed-modules:
+      Adapter.HTTP.API.Auth
+      Adapter.HTTP.API.Common
+      Adapter.HTTP.API.Main
+      Adapter.HTTP.Common
+      Adapter.HTTP.Main
+      Adapter.HTTP.Web.Auth
+      Adapter.HTTP.Web.Common
+      Adapter.HTTP.Web.Main
       Adapter.InMemory.Auth
       Adapter.PostgreSQL.Auth
       Adapter.RabbitMQ.Auth
@@ -48,11 +56,18 @@ library
       aeson
     , amqp
     , base >=4.7 && <5
+    , blaze-builder
+    , blaze-html
     , bytestring
     , containers
+    , cookie
     , data-has
+    , digestive-functors
+    , digestive-functors-blaze
+    , digestive-functors-scotty
     , exceptions
     , hedis
+    , http-types
     , katip
     , mono-traversable
     , mtl
@@ -62,12 +77,17 @@ library
     , regex-tdfa
     , resource-pool
     , safe-exceptions
+    , scotty
     , stm
     , string-random
     , template-haskell
     , text
     , time
     , time-lens
+    , wai
+    , wai-extra
+    , wai-middleware-static
+    , warp
   default-language: Haskell2010
 
 executable uaa-hs-exe
@@ -88,11 +108,18 @@ executable uaa-hs-exe
       aeson
     , amqp
     , base >=4.7 && <5
+    , blaze-builder
+    , blaze-html
     , bytestring
     , containers
+    , cookie
     , data-has
+    , digestive-functors
+    , digestive-functors-blaze
+    , digestive-functors-scotty
     , exceptions
     , hedis
+    , http-types
     , katip
     , mono-traversable
     , mtl
@@ -102,6 +129,7 @@ executable uaa-hs-exe
     , regex-tdfa
     , resource-pool
     , safe-exceptions
+    , scotty
     , stm
     , string-random
     , template-haskell
@@ -109,6 +137,10 @@ executable uaa-hs-exe
     , time
     , time-lens
     , uaa-hs
+    , wai
+    , wai-extra
+    , wai-middleware-static
+    , warp
   default-language: Haskell2010
 
 test-suite uaa-hs-test
@@ -130,11 +162,18 @@ test-suite uaa-hs-test
       aeson
     , amqp
     , base >=4.7 && <5
+    , blaze-builder
+    , blaze-html
     , bytestring
     , containers
+    , cookie
     , data-has
+    , digestive-functors
+    , digestive-functors-blaze
+    , digestive-functors-scotty
     , exceptions
     , hedis
+    , http-types
     , katip
     , mono-traversable
     , mtl
@@ -144,6 +183,7 @@ test-suite uaa-hs-test
     , regex-tdfa
     , resource-pool
     , safe-exceptions
+    , scotty
     , stm
     , string-random
     , template-haskell
@@ -151,4 +191,8 @@ test-suite uaa-hs-test
     , time
     , time-lens
     , uaa-hs
+    , wai
+    , wai-extra
+    , wai-middleware-static
+    , warp
   default-language: Haskell2010
