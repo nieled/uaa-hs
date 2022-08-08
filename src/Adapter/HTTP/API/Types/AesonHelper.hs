@@ -1,11 +1,27 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Adapter.HTTP.API.Types.AesonHelper where
 
-import           Data.Aeson.TH
-import           Data.Aeson.Types
-import           Data.Text
+import           Data.Aeson.TH                  ( Options
+                                                  ( constructorTagModifier
+                                                  , fieldLabelModifier
+                                                  , tagSingleConstructors
+                                                  , unwrapUnaryRecords
+                                                  )
+                                                , defaultOptions
+                                                , deriveJSON
+                                                , deriveToJSON
+                                                )
+import           Data.Aeson.Types               ( Parser )
+import           Data.Text                      ( Text
+                                                , intercalate
+                                                , unpack
+                                                )
 import           Domain.Auth                    ( LoginError )
-import           Language.Haskell.TH.Syntax
+import           Language.Haskell.TH.Syntax     ( Dec
+                                                , Name
+                                                , Q
+                                                , nameBase
+                                                )
 import           Prelude                 hiding ( drop
                                                 , length
                                                 , map
