@@ -50,3 +50,7 @@ deriveJSONSumType record =
                                   , tagSingleConstructors  = True
                                   }
   in  deriveJSON opts record
+
+deriveToJSONUnwrap :: Name -> Q [Dec]
+deriveToJSONUnwrap =
+  let opts = defaultOptions { unwrapUnaryRecords = True } in deriveToJSON opts
