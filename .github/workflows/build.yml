@@ -5,10 +5,10 @@ on:
     branches: [ "*" ]
     paths-ignore: 
     - '*.md'
-  pull_request:
-    branches: [ "*" ]
-    paths-ignore: 
-    - '*.md'
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   haskell:
@@ -27,5 +27,14 @@ jobs:
       run: |
         stack update
         stack test --dependencies-only --fast
+    - uses: actions/cache@v2
+      with:
+        path: |
+          ~/.stack
+          .stack-work
+        # best effort for cache: tie it to Stack resolver and package config
+        key: ${{ runner.os }}-stack-${{ hashFiles('stack.yaml.lock', 'package.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-stack
     - name: Build and test
       run: stack test --fast --test-arguments="--hide-successes --ansi-tricks=false"
