@@ -29,6 +29,7 @@ library
       Adapter.HTTP.API.Common
       Adapter.HTTP.API.Main
       Adapter.HTTP.API.Types.AesonHelper
+      Adapter.HTTP.API.Types.Auth
       Adapter.HTTP.Common
       Adapter.HTTP.Main
       Adapter.HTTP.Web.Auth

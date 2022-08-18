@@ -5,11 +5,9 @@ module Domain.Auth
     Auth(..)
   , Email
   , mkEmail
-  , mkEmail'
   , rawEmail
   , Password
   , mkPassword
-  , mkPassword'
   , rawPassword
   , UserId
   , VerificationCode
