@@ -2,6 +2,7 @@
 module Adapter.HTTP.API.Auth where
 
 import           Adapter.HTTP.API.Common        ( reqCurrentUserId )
+import           Adapter.HTTP.API.Types.Auth    ( )
 import           Adapter.HTTP.Common            ( parseAndValidateJSON
                                                 , setSessionIdInCookie
                                                 , toResult
@@ -58,28 +59,25 @@ routes = do
     input        <- parseAndValidateJSON authForm
     domainResult <- lift $ register input
     case domainResult of
-      Left RegistrationErrorEmailTaken -> do
+      Left err -> do
         status status400
-        json ("Email Taken" :: Text)
+        json err
       Right _ -> return ()
   post "/api/auth/verifyEmail" $ do
     input        <- parseAndValidateJSON verifyEmailForm
     domainResult <- lift $ verifyEmail input
     case domainResult of
-      Left EmailVerificationErrorInvalidCode -> do
+      Left err -> do
         status status400
-        json ("Invalid Code" :: Text)
+        json err
       Right _ -> return ()
   post "/api/auth/login" $ do
     input        <- parseAndValidateJSON authForm
     domainResult <- lift $ login input
     case domainResult of
-      Left LoginErrorInvalidAuth -> do
+      Left err -> do
         status status400
-        json ("Invalid Auth" :: Text)
-      Left LoginErrorEmailNotVerified -> do
-        status status400
-        json ("Email Not Verified" :: Text)
+        json err
       Right sessionId -> do
         setSessionIdInCookie sessionId
         return ()
