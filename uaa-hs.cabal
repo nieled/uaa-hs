@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Adapter.HTTP.API.Auth
+      Adapter.HTTP.API.Client.Auth
       Adapter.HTTP.API.Client.Common
       Adapter.HTTP.API.Common
       Adapter.HTTP.API.Main
