@@ -26,8 +26,12 @@ source-repository head
 library
   exposed-modules:
       Adapter.HTTP.API.Auth
+      Adapter.HTTP.API.Client.Auth
+      Adapter.HTTP.API.Client.Common
       Adapter.HTTP.API.Common
       Adapter.HTTP.API.Main
+      Adapter.HTTP.API.Types.AesonHelper
+      Adapter.HTTP.API.Types.Auth
       Adapter.HTTP.Common
       Adapter.HTTP.Main
       Adapter.HTTP.Web.Auth
